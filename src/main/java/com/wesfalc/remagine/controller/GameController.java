@@ -3,6 +3,8 @@ package com.wesfalc.remagine.controller;
 import com.wesfalc.remagine.domain.Game;
 import com.wesfalc.remagine.domain.Player;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,6 +24,13 @@ public class GameController {
 
     private HashMap<String, Game> games = new HashMap<>();
 
+    @Autowired
+    private SimpMessageSendingOperations messagingTemplate;
+
+    private void sendGameMessage(String gameCode, String message) {
+        messagingTemplate.convertAndSend("/game/messages/" + gameCode, message);
+    }
+
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/userJoined", method = {RequestMethod.POST})
     public void userJoined(HttpServletRequest request, HttpServletResponse response, @RequestParam("gamecode") String gameCode,
@@ -35,6 +44,9 @@ public class GameController {
         Cookie cookie = new Cookie("remagine", username + "-" + gameCode);
         response.addCookie(cookie);
         response.sendRedirect("/home.html");
+
+        String playerJoinedMessage = username + " has joined the game.";
+        sendGameMessage(gameCode, playerJoinedMessage);
     }
 
     private Game joinGame(String gameCode, String username) {
