@@ -23,12 +23,24 @@ public class Game {
     private Player topicSetter;
     private int playerIndex = -1;
     private int round = 0;
+    private List<Event> history = new ArrayList<>();
+
+    public Game(String code) {
+        this.code = code;
+        history.add(new Event(Event.Type.GAME_CREATED, code));
+    }
 
     public void addPlayer(Player player) {
         players.add(player);
+        history.add(new Event(Event.Type.PLAYER_JOINED, player.name()));
+    }
+
+    public void host(Player host) {
+        history.add(new Event(Event.Type.HOST_JOINED, host.name()));
     }
 
     public void start() {
+        history.add(new Event(Event.Type.GAME_STARTED, "Game started."));
         Collections.shuffle(players);
         nextRound();
     }
@@ -46,6 +58,4 @@ public class Game {
         }
         return players.get(playerIndex);
     }
-
-
 }

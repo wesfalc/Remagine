@@ -1,9 +1,12 @@
 package com.wesfalc.remagine.controller;
 
+import com.google.gson.Gson;
+import com.wesfalc.remagine.domain.Event;
 import com.wesfalc.remagine.domain.Game;
 import com.wesfalc.remagine.domain.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -17,18 +20,44 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Controller
 public class GameController {
 
     private HashMap<String, Game> games = new HashMap<>();
+    Gson gson = new Gson();
 
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    private void sendGameMessage(String gameCode, String message) {
+    private void sendGameMessage(String gameCode, Object message) {
         messagingTemplate.convertAndSend("/game/messages/" + gameCode, message);
+    }
+
+    private void sendPlayerMessage(String gameCode, String player, Object message) {
+        messagingTemplate.convertAndSend("/game/messages/" + gameCode+"/" + player, message);
+    }
+
+    private void sendGameHistory(Game game, String player) {
+        for(Event event : game.history()) {
+            sendPlayerMessage(game.code(), player, gson.toJson(event));
+        }
+    }
+
+    @MessageMapping("/game/fetchGameHistory/")
+    public void agentJoinedChat(String jsonMessage) {
+        log.info("Request to fetch game history for game " + jsonMessage);
+
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+        String player = (String) map.get("player");
+
+        Game game = games.get(gameCode);
+        if (game != null) {
+            sendGameHistory(game, player);
+        }
     }
 
     @CrossOrigin(origins = "*")
@@ -45,8 +74,6 @@ public class GameController {
         response.addCookie(cookie);
         response.sendRedirect("/home.html");
 
-        String playerJoinedMessage = username + " has joined the game.";
-        sendGameMessage(gameCode, playerJoinedMessage);
     }
 
     private Game joinGame(String gameCode, String username) {
@@ -58,8 +85,7 @@ public class GameController {
             game = games.get(gameCode);
         }
         else {
-            game = new Game();
-            game.code(gameCode);
+            game = new Game(gameCode);
             game.host(player);
             games.put(gameCode, game);
         }
