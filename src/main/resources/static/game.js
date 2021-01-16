@@ -1,4 +1,4 @@
-var player = "";
+var currentPlayer = "";
 var gameCode = "";
 var stompClient = null;
 var playerIsHost = false;
@@ -9,7 +9,7 @@ window.onload = function () {
     let cookieValue = nameValue[1];
 
     let values = cookieValue.split("-");
-    player = values[0];
+    currentPlayer = values[0];
     gameCode = values[1];
 
     connect();
@@ -22,7 +22,7 @@ function getTextForMessage(json) {
     let eventDesc = json["description"];
 
     if (type === "HOST_JOINED") {
-        if (eventDesc === player) {
+        if (eventDesc === currentPlayer) {
             appendText = "You are the host of this game.";
             playerIsHost = true;
         }
@@ -44,9 +44,9 @@ function appendMessage(command) {
     let json = JSON.parse(text);
     let appendText = getTextForMessage(json);
 
-    let gameLog = document.getElementById("gameLog");
-    gameLog.value = gameLog.value + "\n" + appendText;
-    gameLog.scrollTop = gameLog.scrollHeight;
+    let messagesTextArea = document.getElementById("gameMessagesTextArea");
+    messagesTextArea.value = messagesTextArea.value + "\n" + appendText;
+    messagesTextArea.scrollTop = messagesTextArea.scrollHeight;
 }
 
 function connect() {
@@ -59,10 +59,36 @@ function connect() {
             appendMessage(command);
         });
 
-        stompClient.subscribe('/game/messages/' + gameCode + '/' + player, function (command) {
+        stompClient.subscribe('/game/messages/' + gameCode + '/' + currentPlayer, function (command) {
             // these messages are for the individual user
             appendMessage(command);
         });
+
+        stompClient.subscribe('/game/score/' + gameCode, function (command) {
+
+            let text = command.body;
+
+            console.log("Got game score " + text);
+
+            let json = JSON.parse(text);
+            let player = json["player"];
+            let score = json["score"];
+            let scoreboardTable = document.getElementById("scoreboardTable");
+            let playerRow = document.getElementById("row-" + player);
+
+            if (playerRow == null) {
+                let rowLength = scoreboardTable.rows.length;
+                playerRow = scoreboardTable.insertRow(rowLength);
+                playerRow.id = "row-" + player;
+                playerRow.insertCell(0);
+                playerRow.insertCell(1);
+            }
+            let playerCell = playerRow.cells[0];
+            let scoreCell = playerRow.cells[1];
+            playerCell.innerText = player;
+            scoreCell.innerText = score;
+        });
+
         fetchGameHistory();
     });
 }
@@ -70,6 +96,6 @@ function fetchGameHistory() {
     console.log("fetch game history");
     let jsonMessage = {};
     jsonMessage["gameCode"] = gameCode;
-    jsonMessage["player"] = player;
+    jsonMessage["player"] = currentPlayer;
     stompClient.send("/game/fetchGameHistory/", {}, JSON.stringify(jsonMessage));
 }

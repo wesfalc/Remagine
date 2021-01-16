@@ -4,16 +4,14 @@ import com.google.gson.Gson;
 import com.wesfalc.remagine.domain.Event;
 import com.wesfalc.remagine.domain.Game;
 import com.wesfalc.remagine.domain.Player;
+import com.wesfalc.remagine.domain.Score;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +36,10 @@ public class GameController {
 
     private void sendPlayerMessage(String gameCode, String player, Object message) {
         messagingTemplate.convertAndSend("/game/messages/" + gameCode+"/" + player, message);
+    }
+
+    private void sendScore(String gameCode, String scoreJson) {
+        messagingTemplate.convertAndSend("/game/score/" + gameCode, scoreJson);
     }
 
     private void sendGameHistory(Game game, String player) {
@@ -108,6 +110,18 @@ public class GameController {
             response.setStatus(302);
             response.sendRedirect("/randomText.html");
         }
+    }
+
+    @CrossOrigin(origins = "*")
+    @RequestMapping(value = "/test/{gameCode}/{player}/{score}")
+    public void addTestScore(@PathVariable ("gameCode") String gameCode, @PathVariable ("player") String player, @PathVariable("score") int score) throws IOException {
+        log.info("received test score " + score + " for player " + player + " for game " + gameCode);
+
+        Score playerScore = new Score();
+        playerScore.player(player);
+        playerScore.score(score);
+
+        sendScore(gameCode, gson.toJson(playerScore));
     }
 
 }

@@ -2,10 +2,14 @@ body {
  /*   background-color: #DDDFFF;*/
 }
 
-.textAreaDiv {
-    width: 750px;
-    height: 750px;
-    background-color: blue;
+.remagineLabel {
+    color: darkviolet;
+}
+
+.mainGameDiv {
+    width: 1250px;
+    height: 850px;
+    background-color: greenyellow;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -13,16 +17,47 @@ body {
     transform: translate(-50%, -50%);
 }
 
-.game-log {
-    width: 500px;
-    height: 560px;
+.messagesDiv {
+    width: 46%;
+    height: 40%;
+    background-color: brown;
     position: relative;
+    top: 2%;
+    left: 2%;
+}
+
+.scoreboardDiv {
+    width: 46%;
+    height: 40%;
+    background-color: coral;
+    position: absolute;
+    top: 2%;
+    left: 52%;
+}
+
+.scoreboardTable {
+    width: 60%;
+    height: 80%;
+    position: absolute;
+    left: 20%;
     top: 10%;
-    left: 10%;
-    border: 3px solid #cccccc;
-    padding: 5px;
+    background-color: antiquewhite;
+}
+
+td {
     font-family: Tahoma, sans-serif;
-    font-size: 16px;
+    font-size: 26px;
+    text-align: center;
+}
+
+.gameMessagesTextArea {
+    width: 98%;
+    height: 98%;
+    position: absolute;
+    top: 1%;
+    left: 1%;
+    font-family: Tahoma, sans-serif;
+    font-size: 26px;
     background-position: bottom right;
     background-repeat: no-repeat;
 }
