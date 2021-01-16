@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 import java.util.ArrayList;
@@ -61,6 +60,14 @@ public class Game {
         round ++;
         topicSetter = getTopicSetterForThisRound();
         log.info("Topic to be set by " + topicSetter);
+        addNewEvent(new Event(Event.Type.NEW_ROUND, "Round " + round));
+        Round round = new Round();
+        round.topicSetter(topicSetter.name());
+        sendNewRoundMessage(round);
+    }
+
+    private void sendNewRoundMessage(Round round) {
+        messagingTemplate.convertAndSend("/game/newRound/" + code, gson.toJson(round));
     }
 
     private Player getTopicSetterForThisRound() {

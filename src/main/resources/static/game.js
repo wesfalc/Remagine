@@ -36,6 +36,9 @@ function getTextForMessage(json) {
     else if (type === "GAME_CREATED") {
         appendText = "Game created with unique code '" + eventDesc + "'";
     }
+    else if (type === "NEW_ROUND") {
+        appendText = "New round - " + eventDesc;
+    }
     return appendText;
 }
 
@@ -47,6 +50,61 @@ function appendMessage(command) {
     let messagesTextArea = document.getElementById("gameMessagesTextArea");
     messagesTextArea.value = messagesTextArea.value + "\n" + appendText;
     messagesTextArea.scrollTop = messagesTextArea.scrollHeight;
+}
+
+function updateScore(command) {
+    let text = command.body;
+
+    console.log("Got game score " + text);
+
+    let json = JSON.parse(text);
+    let player = json["player"];
+    let score = json["score"];
+    let scoreboardTable = document.getElementById("scoreboardTable");
+    let playerRow = document.getElementById("row-" + player);
+
+    if (playerRow == null) {
+        let rowLength = scoreboardTable.rows.length;
+        playerRow = scoreboardTable.insertRow(rowLength);
+        playerRow.id = "row-" + player;
+        playerRow.insertCell(0);
+        playerRow.insertCell(1);
+    }
+    let playerCell = playerRow.cells[0];
+    let scoreCell = playerRow.cells[1];
+    playerCell.innerText = player;
+    scoreCell.innerText = score;
+}
+
+function handleNewRound(command) {
+    let storyTable = document.getElementById("storyTable");
+    let rowLength = storyTable.rows.length;
+    for (let i = 2; i < rowLength; i++) {
+        storyTable.deleteRow(i);
+    }
+
+    let text = command.body;
+    let json = JSON.parse(text);
+    let topicSetter = json["topicSetter"];
+    let topic = json["topic"];
+    let roundNumber = json["roundNumber"];
+
+    let rowIndex = storyTable.rows.length;
+    let newRow = null;
+
+    newRow = storyTable.insertRow(rowIndex);
+    let cell1 = newRow.insertCell(0);
+    let cell2 = newRow.insertCell(1);
+    cell1.innerText = topicSetter;
+
+    if (topicSetter === currentPlayer) {
+        let topicInput = document.createElement('input');
+        cell2.appendChild(topicInput);
+        return ;
+    }
+    else {
+        cell2.innerText = "TBD";
+    }
 }
 
 function connect() {
@@ -65,28 +123,11 @@ function connect() {
         });
 
         stompClient.subscribe('/game/score/' + gameCode, function (command) {
+            updateScore(command);
+        });
 
-            let text = command.body;
-
-            console.log("Got game score " + text);
-
-            let json = JSON.parse(text);
-            let player = json["player"];
-            let score = json["score"];
-            let scoreboardTable = document.getElementById("scoreboardTable");
-            let playerRow = document.getElementById("row-" + player);
-
-            if (playerRow == null) {
-                let rowLength = scoreboardTable.rows.length;
-                playerRow = scoreboardTable.insertRow(rowLength);
-                playerRow.id = "row-" + player;
-                playerRow.insertCell(0);
-                playerRow.insertCell(1);
-            }
-            let playerCell = playerRow.cells[0];
-            let scoreCell = playerRow.cells[1];
-            playerCell.innerText = player;
-            scoreCell.innerText = score;
+        stompClient.subscribe('/game/newRound/' + gameCode, function (commmand) {
+            handleNewRound(commmand);
         });
 
         fetchGameHistory();

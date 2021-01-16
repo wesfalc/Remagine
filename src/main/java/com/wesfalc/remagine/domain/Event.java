@@ -13,7 +13,7 @@ public class Event {
         GAME_STARTED,
         HOST_JOINED,
         PLAYER_JOINED,
-
+        NEW_ROUND,
     }
     private String description;
 

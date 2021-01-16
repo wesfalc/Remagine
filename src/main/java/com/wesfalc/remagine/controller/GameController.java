@@ -124,4 +124,11 @@ public class GameController {
         sendScore(gameCode, gson.toJson(playerScore));
     }
 
+    @CrossOrigin(origins = "*")
+    @RequestMapping(value = "/test/{gameCode}/nextRound")
+    public void testStartNewRound(@PathVariable ("gameCode") String gameCode) throws IOException {
+        Game game = games.get(gameCode);
+        game.nextRound();
+    }
+
 }
