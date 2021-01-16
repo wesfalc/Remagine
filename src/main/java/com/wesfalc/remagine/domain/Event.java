@@ -17,6 +17,9 @@ public class Event {
         NEW_TOPIC_SETTER,
         TOPIC_SET,
         STORY_SUBMITTED,
+        STORY_GUESSED,
+        STORY_REVEALED,
+        SCORE_UPDATED,
     }
     private String description;
 

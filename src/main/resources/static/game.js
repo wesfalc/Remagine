@@ -2,6 +2,7 @@ var currentPlayer = "";
 var gameCode = "";
 var stompClient = null;
 var playerIsHost = false;
+var currentTopicSetter = null;
 
 window.onload = function () {
     let cookie = document.cookie;
@@ -51,6 +52,9 @@ function getTextForMessage(json) {
     }
     else if (type === "STORY_SUBMITTED") {
         appendText = eventDesc + " is ready with a story.";
+    }
+    else {
+        appendText = eventDesc;
     }
 
     return appendText;
@@ -128,6 +132,7 @@ function updateScore(command) {
 
 function handleNewRound(command) {
     let text = command.body;
+    console.log("handle new round " + text);
     let json = JSON.parse(text);
     let topicSetter = json["topicSetter"];
     let roundNumber = json["roundNumber"];
@@ -169,11 +174,13 @@ function handleNewRound(command) {
 }
 
 function deleteStoryTableRows() {
+    console.log("deleting story table rows");
     let storyTable = document.getElementById("storyTable");
     let rowLength = storyTable.rows.length;
 
-    for (let i = 2; i < rowLength; i++) {
+    for (let i = rowLength-1; i >=2 ; i--) {
         storyTable.deleteRow(i);
+        console.log("deleted row " + i);
     }
     return storyTable;
 }
@@ -216,6 +223,8 @@ function handleTopicSet(command) {
     let roundNumber = json["roundNumber"];
     let topic = json["topic"];
 
+    currentTopicSetter = topicSetter;
+
     let storyTable = deleteStoryTableRows();
 
     let rowIndex = storyTable.rows.length;
@@ -248,9 +257,9 @@ function handleTopicSet(command) {
 
         addPairOfRadioButtons(cell5, "likeDislike", "Like", "Dislike");
 
-        let hintSubmitButton = document.createElement('button');
-        hintSubmitButton.innerText = "Submit Hint";
-        hintSubmitButton.addEventListener ("click", function() {
+        let storySubmitButton = document.createElement('button');
+        storySubmitButton.innerText = "Submit Story";
+        storySubmitButton.addEventListener ("click", function() {
             let storyType = document.querySelector('input[name="storyType"]:checked').value;
             let likeDislike = document.querySelector('input[name="likeDislike"]:checked').value;
 
@@ -271,10 +280,59 @@ function handleTopicSet(command) {
             cell5.className = "defaultTd";
             cell6.innerText = "Ready";
 
-            stompClient.send("/game/hintSubmitted/", {}, JSON.stringify(jsonMessage));
+            stompClient.send("/game/storySubmitted/", {}, JSON.stringify(jsonMessage));
         });
 
-        cell6.appendChild(hintSubmitButton);
+        cell6.appendChild(storySubmitButton);
+    }
+}
+
+function handleStorySubmitted(command) {
+    let text = command.body;
+    let json = JSON.parse(text);
+    let playerName = json["playerName"];
+    let storyHint = json["storyHint"];
+
+    if (currentTopicSetter === currentPlayer) {
+        let storyTable = document.getElementById("storyTable");
+        let rowIndex = storyTable.rows.length;
+        let newRow = storyTable.insertRow(rowIndex);
+        let cell1 = newRow.insertCell(0);
+        let cell2 = newRow.insertCell(1);
+        let cell3 = newRow.insertCell(2);
+        let cell4 = newRow.insertCell(3);
+        let cell5 = newRow.insertCell(4);
+        let cell6 = newRow.insertCell(5);
+
+        cell1.innerText = playerName;
+        cell2.innerText = " ";
+        cell3.innerText = storyHint;
+        addPairOfRadioButtons(cell4, playerName + "-storyType", "True", "Imaginary");
+        addPairOfRadioButtons(cell5, playerName + "-likeDislike", "Like", "Dislike");
+
+        let guessSubmitButton = document.createElement('button');
+        guessSubmitButton.innerText = "Submit Guess";
+        guessSubmitButton.addEventListener ("click", function() {
+            let storyType = document.querySelector("input[name=" + CSS.escape(playerName) + "-storyType]:checked").value;
+            let likeDislike = document.querySelector("input[name=" + CSS.escape(playerName)+ "-likeDislike]:checked").value;
+
+            let jsonMessage = {};
+            jsonMessage["gameCode"] = gameCode;
+            jsonMessage["player"] = playerName;
+            jsonMessage["storyType"] = storyType;
+            jsonMessage["likeDislike"] = likeDislike;
+            jsonMessage["guesser"] = currentPlayer;
+
+            cell4.innerText = storyType;
+            cell4.className = "defaultTd";
+            cell5.innerText = likeDislike;
+            cell5.className = "defaultTd";
+            cell6.innerText = "Guessed";
+
+            stompClient.send("/game/guessSubmitted/", {}, JSON.stringify(jsonMessage));
+        });
+
+        cell6.appendChild(guessSubmitButton);
     }
 }
 
@@ -297,12 +355,16 @@ function connect() {
             updateScore(command);
         });
 
-        stompClient.subscribe('/game/newRound/' + gameCode, function (commmand) {
-            handleNewRound(commmand);
+        stompClient.subscribe('/game/newRound/' + gameCode, function (command) {
+            handleNewRound(command);
         });
 
-        stompClient.subscribe('/game/topicSet/' + gameCode, function (commmand) {
-            handleTopicSet(commmand);
+        stompClient.subscribe('/game/topicSet/' + gameCode, function (command) {
+            handleTopicSet(command);
+        });
+
+        stompClient.subscribe('/game/storySubmitted/' + gameCode, function (command) {
+            handleStorySubmitted(command);
         });
 
         fetchGameHistory();

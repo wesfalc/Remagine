@@ -25,6 +25,15 @@ public class Game {
     private int playerIndex = -1;
     private Round currentRound;
 
+    private enum GuessType {
+        TRUE_STORY_GUESSED_RIGHT,
+        TRUE_STORY_GUESSED_WRONG,
+        IMAGINARY_STORY_GUESSED_RIGHT,
+        IMAGINARY_STORY_GUESSED_WRONG,
+        LIKE_DISLIKE_GUESSED_RIGHT,
+        LIKE_DISLIKE_GUESSED_WRONG
+    }
+
     private List<Event> history = new ArrayList<>();
     Gson gson = new Gson();
 
@@ -89,6 +98,15 @@ public class Game {
         sendTopicSetMessage();
     }
 
+    private void sendStorySubmittedMessage(Story story) {
+        Story storyToSend = new Story(); // don't send all the details
+
+        storyToSend.playerName(story.playerName());
+        storyToSend.storyHint(story.storyHint());
+
+        messagingTemplate.convertAndSend("/game/storySubmitted/" + code, gson.toJson(storyToSend));
+    }
+
     private void sendTopicSetMessage() {
         messagingTemplate.convertAndSend("/game/topicSet/" + code, gson.toJson(currentRound));
     }
@@ -128,8 +146,158 @@ public class Game {
         story.storyHint(storyHint);
         story.liked(liked);
         story.trueStory(trueStory);
-        story.player(playerName);
+        story.playerName(player.name());
+
+        currentRound.addStory(player.name(), story);
 
         addNewEvent(new Event(Event.Type.STORY_SUBMITTED, playerName));
+        sendStorySubmittedMessage(story);
+    }
+
+    public void submitGuess(String player, String guesser, String storyType, String likeDislike) {
+
+        addNewEvent(new Event(Event.Type.STORY_GUESSED, guesser + " guessed that the story by "
+                + player + " is " + storyType.toLowerCase() + " and they " + likeDislike.toLowerCase() + " it."));
+
+        Story existingStory = currentRound.getStory(player);
+
+        Story guessedStory = initGuessedStory(guesser, storyType, likeDislike);
+
+
+        addNewEvent(new Event(Event.Type.STORY_REVEALED, "The story by "
+                + player +" is actually " + getTrueOrImaginary(existingStory.trueStory())
+                + " and they " + getLikeOrDislike(existingStory.liked()) + " it."));
+
+        scoreTheGuess(existingStory, guessedStory);
+        //addNewEvent();
+    }
+
+    private void scoreTheGuess(Story existingStory, Story guessedStory) {
+        int guesserScore;
+        int playerScore;
+
+        String playerName = existingStory.playerName();
+        String guesser = guessedStory.playerName();
+
+        if (existingStory.trueStory()) {
+            if(guessedStory.trueStory()) {
+                // guesser guessed right
+                playerScore = getScoreFor(GuessType.TRUE_STORY_GUESSED_RIGHT);
+                updateScore(playerName, playerScore);
+                guesserScore = 1;
+                updateScore(guesser, guesserScore);
+            }
+            else {
+               // guesser guessed wrong
+                playerScore = getScoreFor(GuessType.TRUE_STORY_GUESSED_WRONG);
+                updateScore(playerName, playerScore);
+                guesserScore = 0;
+                updateScore(guesser, guesserScore);
+            }
+        }
+        else {
+            // imaginary story
+            if (!guessedStory.trueStory()) {
+                // guesser guessed right
+                playerScore = getScoreFor(GuessType.IMAGINARY_STORY_GUESSED_RIGHT);
+                updateScore(playerName, playerScore);
+                guesserScore = 1;
+                updateScore(guesser, guesserScore);
+            }
+            else {
+                // guesser guessed wrong
+                playerScore = getScoreFor(GuessType.IMAGINARY_STORY_GUESSED_WRONG);
+                updateScore(playerName, playerScore);
+                guesserScore = 0;
+                updateScore(guesser, guesserScore);
+            }
+        }
+
+        if (existingStory.liked() == guessedStory.liked()) {
+            playerScore = getScoreFor(GuessType.LIKE_DISLIKE_GUESSED_RIGHT);
+            updateScore(playerName, playerScore);
+            guesserScore = 1;
+            updateScore(guesser, guesserScore);
+        }
+        else {
+            playerScore = getScoreFor(GuessType.LIKE_DISLIKE_GUESSED_WRONG);
+            updateScore(playerName, playerScore);
+            guesserScore = 0;
+            updateScore(guesser, guesserScore);
+        }
+    }
+
+    private void updateScore(String playerName, int playerScore) {
+        Player player = playerMap.get(playerName);
+        int newScore = player.score() + playerScore;
+        player.score(newScore);
+
+        addNewEvent(new Event(Event.Type.SCORE_UPDATED, playerName + " got " + playerScore + " point(s)."));
+
+        Score scoreMessage = new Score();
+        scoreMessage.player(playerName);
+        scoreMessage.score(newScore);
+
+        sendScore(code, gson.toJson(scoreMessage));
+    }
+
+    private void sendScore(String gameCode, String scoreJson) {
+        messagingTemplate.convertAndSend("/game/score/" + code, scoreJson);
+    }
+
+    private int getScoreFor(GuessType guessType) {
+        switch (guessType) {
+            case TRUE_STORY_GUESSED_RIGHT:
+                return 4;
+
+            case TRUE_STORY_GUESSED_WRONG:
+                return 5;
+
+            case IMAGINARY_STORY_GUESSED_RIGHT:
+            case LIKE_DISLIKE_GUESSED_WRONG:
+                return 3;
+
+            case IMAGINARY_STORY_GUESSED_WRONG:
+                return 6;
+
+            case LIKE_DISLIKE_GUESSED_RIGHT:
+                return 1;
+
+        }
+        return 0;
+    }
+
+    private Story initGuessedStory(String guesser, String storyType, String likeDislike) {
+        Story story = new Story();
+        story.playerName(guesser);
+        if("like".equals(likeDislike.toLowerCase())) {
+            story.liked(true);
+        }
+        else {
+            story.liked(false);
+        }
+
+        if("true".equals(storyType.toLowerCase())) {
+            story.trueStory(true);
+        }
+        else {
+            story.trueStory(false);
+        }
+
+        return story;
+    }
+
+    private String getLikeOrDislike(boolean likeDislike) {
+        if(likeDislike) {
+            return "like";
+        }
+        return "dislike";
+    }
+
+    private String getTrueOrImaginary(boolean trueOrImaginary) {
+        if(trueOrImaginary) {
+            return "true";
+        }
+        return "imaginary";
     }
 }

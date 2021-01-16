@@ -11,5 +11,5 @@ public class Story {
     private boolean trueStory;
     private boolean liked;
     private String storyHint;
-    private String player;
+    private String playerName;
 }

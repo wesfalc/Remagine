@@ -76,9 +76,9 @@ public class GameController {
         }
     }
 
-    @MessageMapping("/game/hintSubmitted/")
-    public void hintSubmitted(String jsonMessage) {
-        log.info("Hint submitted - " + jsonMessage);
+    @MessageMapping("/game/storySubmitted/")
+    public void storySubmitted(String jsonMessage) {
+        log.info("Story submitted - " + jsonMessage);
         Map map = gson.fromJson(jsonMessage, Map.class);
         String gameCode = (String) map.get("gameCode");
         String player = (String) map.get("player");
@@ -91,6 +91,23 @@ public class GameController {
             game.submitPlayerStory(player, storyHint, storyType, likeDislike);
         }
     }
+
+    @MessageMapping("/game/guessSubmitted/")
+    public void guessSubmitted(String jsonMessage) {
+        log.info("Guess submitted - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+        String player = (String) map.get("player");
+        String storyType = (String) map.get("storyType");
+        String likeDislike = (String) map.get("likeDislike");
+        String guesser = (String) map.get("guesser");
+
+        Game game = games.get(gameCode);
+        if (game != null) {
+            game.submitGuess(player, guesser, storyType, likeDislike);
+        }
+    }
+
     @MessageMapping("/game/start/")
     public void startGame(String jsonMessage) {
         log.info("Game started - " + jsonMessage);
