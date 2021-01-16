@@ -1,9 +1,12 @@
 package com.wesfalc.remagine.domain;
 
+import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,25 +27,34 @@ public class Game {
     private int playerIndex = -1;
     private int round = 0;
     private List<Event> history = new ArrayList<>();
+    Gson gson = new Gson();
 
-    public Game(String code) {
+    private SimpMessageSendingOperations messagingTemplate;
+
+    public Game(SimpMessageSendingOperations messagingTemplate, String code) {
+        this.messagingTemplate = messagingTemplate;
         this.code = code;
-        history.add(new Event(Event.Type.GAME_CREATED, code));
+        addNewEvent(new Event(Event.Type.GAME_CREATED, code));
     }
 
     public void addPlayer(Player player) {
         players.add(player);
-        history.add(new Event(Event.Type.PLAYER_JOINED, player.name()));
+        addNewEvent(new Event(Event.Type.PLAYER_JOINED, player.name()));
     }
 
     public void host(Player host) {
-        history.add(new Event(Event.Type.HOST_JOINED, host.name()));
+        addNewEvent(new Event(Event.Type.HOST_JOINED, host.name()));
     }
 
     public void start() {
-        history.add(new Event(Event.Type.GAME_STARTED, "Game started."));
+        addNewEvent(new Event(Event.Type.GAME_STARTED, "Game started."));
         Collections.shuffle(players);
         nextRound();
+    }
+
+    private void addNewEvent(Event event) {
+        history.add(event);
+        messagingTemplate.convertAndSend("/game/messages/" + code, gson.toJson(event));
     }
 
     public void nextRound() {

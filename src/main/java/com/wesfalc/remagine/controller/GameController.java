@@ -85,7 +85,7 @@ public class GameController {
             game = games.get(gameCode);
         }
         else {
-            game = new Game(gameCode);
+            game = new Game(messagingTemplate, gameCode);
             game.host(player);
             games.put(gameCode, game);
         }

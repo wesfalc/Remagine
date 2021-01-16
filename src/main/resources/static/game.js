@@ -16,6 +16,39 @@ window.onload = function () {
     // don't worry about disconnect(). It automatically disconnects when the page is closed.
 }
 
+function getTextForMessage(json) {
+    let appendText = json;
+    let type = json["type"];
+    let eventDesc = json["description"];
+
+    if (type === "HOST_JOINED") {
+        if (eventDesc === player) {
+            appendText = "You are the host of this game.";
+            playerIsHost = true;
+        }
+        else {
+            appendText = eventDesc + " is the host of this game.";
+        }
+    }
+    else if (type === "PLAYER_JOINED") {
+        appendText = eventDesc + " joined the game.";
+    }
+    else if (type === "GAME_CREATED") {
+        appendText = "Game created with unique code '" + eventDesc + "'";
+    }
+    return appendText;
+}
+
+function appendMessage(command) {
+    let text = command.body;
+    let json = JSON.parse(text);
+    let appendText = getTextForMessage(json);
+
+    let gameLog = document.getElementById("gameLog");
+    gameLog.value = gameLog.value + "\n" + appendText;
+    gameLog.scrollTop = gameLog.scrollHeight;
+}
+
 function connect() {
     let socket = new SockJS('/remagine-websocket');
     stompClient = Stomp.over(socket);
@@ -23,34 +56,12 @@ function connect() {
         console.log('Connected: ' + frame);
         stompClient.subscribe('/game/messages/' + gameCode, function (command) {
             // do something with game messages
+            appendMessage(command);
         });
 
         stompClient.subscribe('/game/messages/' + gameCode + '/' + player, function (command) {
             // these messages are for the individual user
-            let text = command.body;
-            let json = JSON.parse(text);
-            let appendText = text;
-
-            let type = json["type"];
-            let eventDesc = json["description"];
-
-            if (type === "HOST_JOINED") {
-                if (eventDesc === player) {
-                    appendText = "You are the host of this game.";
-                    playerIsHost = true;
-                }
-                else {
-                    appendText = eventDesc + " is the host of this game.";
-                }
-            }
-            else if (type === "PLAYER_JOINED") {
-                appendText = eventDesc + " joined the game.";
-            }
-            else if (type === "GAME_CREATED") {
-                appendText = "Game created with unique code '" + eventDesc + "'";
-            }
-            let bannerLabel = document.getElementById("banner");
-            bannerLabel.innerText = bannerLabel.innerText + "\n" + appendText;
+            appendMessage(command);
         });
         fetchGameHistory();
     });
