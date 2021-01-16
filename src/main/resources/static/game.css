@@ -7,8 +7,8 @@ body {
 }
 
 .mainGameDiv {
-    width: 1250px;
-    height: 850px;
+    width: 80vw;
+    height: 70vh;
     background-color: greenyellow;
     position: absolute;
     top: 50%;
