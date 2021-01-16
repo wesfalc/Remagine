@@ -7,9 +7,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -17,6 +15,7 @@ import java.util.List;
 @Slf4j
 public class Game {
     private List<Player> players = new ArrayList<>();
+    private Map<String, Player> playerMap = new HashMap<>(); // for convenience and due to time contraints!
     private Player host;
     private String code;
     private boolean started = false;
@@ -24,7 +23,8 @@ public class Game {
 
     private Player topicSetter;
     private int playerIndex = -1;
-    private int round = 0;
+    private Round currentRound;
+
     private List<Event> history = new ArrayList<>();
     Gson gson = new Gson();
 
@@ -38,6 +38,7 @@ public class Game {
 
     public void addPlayer(Player player) {
         players.add(player);
+        playerMap.put(player.name(), player);
         addNewEvent(new Event(Event.Type.PLAYER_JOINED, player.name()));
     }
 
@@ -57,17 +58,43 @@ public class Game {
     }
 
     public void nextRound() {
-        round ++;
+        if (currentRound == null) {
+            currentRound = new Round();
+            currentRound.roundNumber(1);
+        }
+        else {
+            int previousRoundNumber = currentRound.roundNumber();
+            currentRound = new Round();
+            currentRound.roundNumber(previousRoundNumber + 1);
+        }
+
         topicSetter = getTopicSetterForThisRound();
+        currentRound.topicSetter(topicSetter.name());
+
+
+        addNewEvent(new Event(Event.Type.NEW_ROUND, "" + currentRound.roundNumber()));
+
         log.info("Topic to be set by " + topicSetter);
-        addNewEvent(new Event(Event.Type.NEW_ROUND, "Round " + round));
-        Round round = new Round();
-        round.topicSetter(topicSetter.name());
-        sendNewRoundMessage(round);
+
+        addNewEvent(new Event(Event.Type.NEW_TOPIC_SETTER, topicSetter.name()));
+
+        sendNewRoundMessage();
     }
 
-    private void sendNewRoundMessage(Round round) {
-        messagingTemplate.convertAndSend("/game/newRound/" + code, gson.toJson(round));
+    public void setTopic(String topic) {
+        currentRound.topic(topic);
+        log.info("Topic set to " + topic);
+
+        addNewEvent(new Event(Event.Type.TOPIC_SET, topic));
+        sendTopicSetMessage();
+    }
+
+    private void sendTopicSetMessage() {
+        messagingTemplate.convertAndSend("/game/topicSet/" + code, gson.toJson(currentRound));
+    }
+
+    private void sendNewRoundMessage() {
+        messagingTemplate.convertAndSend("/game/newRound/" + code, gson.toJson(currentRound));
     }
 
     private Player getTopicSetterForThisRound() {
@@ -76,5 +103,33 @@ public class Game {
             playerIndex = 0;
         }
         return players.get(playerIndex);
+    }
+
+    public void submitPlayerStory(String playerName, String storyHint, String storyType, String likeDislike) {
+        Player player = playerMap.get(playerName);
+        if (player == null) {
+            log.warn("Received player story for unknown player " + playerName + " gameCode = " + code);
+            return;
+        }
+
+        boolean liked = false;
+
+        if("Like".toLowerCase().equals(likeDislike.toLowerCase())) {
+            liked = true;
+        }
+
+        boolean trueStory = false;
+
+        if("True".toLowerCase().equals(storyType.toLowerCase())) {
+            trueStory = true;
+        }
+
+        Story story = new Story();
+        story.storyHint(storyHint);
+        story.liked(liked);
+        story.trueStory(trueStory);
+        story.player(playerName);
+
+        addNewEvent(new Event(Event.Type.STORY_SUBMITTED, playerName));
     }
 }

@@ -62,10 +62,16 @@ body {
     background-color: blanchedalmond;
 }
 
-td {
+td, defaultTd {
     font-family: Tahoma, sans-serif;
     font-size: 26px;
     text-align: center;
+}
+
+.tdAlignLeft {
+    font-family: Tahoma, sans-serif;
+    font-size: 26px;
+    text-align: left;
 }
 
 .gameMessagesTextArea {

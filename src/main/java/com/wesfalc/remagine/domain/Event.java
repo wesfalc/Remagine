@@ -14,6 +14,9 @@ public class Event {
         HOST_JOINED,
         PLAYER_JOINED,
         NEW_ROUND,
+        NEW_TOPIC_SETTER,
+        TOPIC_SET,
+        STORY_SUBMITTED,
     }
     private String description;
 

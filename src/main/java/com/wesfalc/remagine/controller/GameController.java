@@ -62,6 +62,37 @@ public class GameController {
         }
     }
 
+    @MessageMapping("/game/setTopic/")
+    public void setTopic(String jsonMessage) {
+        log.info("Request to set topic - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+        String topicSetter = (String) map.get("topicSetter");
+        String topic = (String) map.get("topic");
+
+        Game game = games.get(gameCode);
+        if (game != null) {
+            game.setTopic(topic);
+        }
+    }
+
+    @MessageMapping("/game/hintSubmitted/")
+    public void hintSubmitted(String jsonMessage) {
+        log.info("Hint submitted - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+        String player = (String) map.get("player");
+        String storyHint = (String) map.get("storyHint");
+        String storyType = (String) map.get("storyType");
+        String likeDislike = (String) map.get("likeDislike");
+
+        Game game = games.get(gameCode);
+        if (game != null) {
+            game.submitPlayerStory(player, storyHint, storyType, likeDislike);
+        }
+    }
+
+
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/userJoined", method = {RequestMethod.POST})
     public void userJoined(HttpServletRequest request, HttpServletResponse response, @RequestParam("gamecode") String gameCode,
