@@ -91,7 +91,29 @@ public class GameController {
             game.submitPlayerStory(player, storyHint, storyType, likeDislike);
         }
     }
+    @MessageMapping("/game/start/")
+    public void startGame(String jsonMessage) {
+        log.info("Game started - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
 
+        Game game = games.get(gameCode);
+        if (game != null) {
+            game.start();
+        }
+    }
+
+    @MessageMapping("/game/nextRound/")
+    public void nextRound(String jsonMessage) {
+        log.info("Next round - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+
+        Game game = games.get(gameCode);
+        if (game != null) {
+            game.nextRound();
+        }
+    }
 
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/userJoined", method = {RequestMethod.POST})

@@ -25,6 +25,7 @@ function getTextForMessage(json) {
         if (eventDesc === currentPlayer) {
             appendText = "You are the host of this game.";
             playerIsHost = true;
+            addAdminControls();
         }
         else {
             appendText = eventDesc + " is the host of this game.";
@@ -35,6 +36,9 @@ function getTextForMessage(json) {
     }
     else if (type === "GAME_CREATED") {
         appendText = "Game created with unique code '" + eventDesc + "'";
+    }
+    else if (type === "GAME_STARTED") {
+        appendText = eventDesc;
     }
     else if (type === "NEW_ROUND") {
         appendText = "New round - Round " + eventDesc;
@@ -50,6 +54,42 @@ function getTextForMessage(json) {
     }
 
     return appendText;
+}
+
+function addAdminControls() {
+    let adminTable = document.getElementById("adminTable");
+
+    let newRow;
+
+    newRow = adminTable.insertRow(0);
+    let cell1 = newRow.insertCell(0);
+    cell1.innerText = "Admin Controls";
+    cell1.colSpan = 2;
+
+    newRow = adminTable.insertRow(1);
+    cell1 = newRow.insertCell(0);
+    cell2 = newRow.insertCell(1);
+
+    let startGameButton = document.createElement('button');
+    startGameButton.innerText = "Start Game";
+    startGameButton.addEventListener ("click", function() {
+        let jsonMessage = {};
+        jsonMessage["gameCode"] = gameCode;
+        stompClient.send("/game/start/", {}, JSON.stringify(jsonMessage));
+        startGameButton.disabled = true;
+    });
+
+    cell1.appendChild(startGameButton);
+
+    let nextRoundButton = document.createElement('button');
+    nextRoundButton.innerText = "Next Round";
+    nextRoundButton.addEventListener("click", function () {
+       let jsonMessage = {};
+        jsonMessage["gameCode"] = gameCode;
+        stompClient.send("/game/nextRound/", {}, JSON.stringify(jsonMessage));
+    });
+
+    cell2.appendChild(nextRoundButton);
 }
 
 function appendMessage(command) {

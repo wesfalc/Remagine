@@ -85,3 +85,21 @@ td, defaultTd {
     background-position: bottom right;
     background-repeat: no-repeat;
 }
+
+.adminDiv {
+    width: 96%;
+    height: 12%;
+    position: absolute;
+    left: 2%;
+    top: 86%;
+    background-color: deepskyblue;
+}
+
+.adminTable {
+    width: 99%;
+    height: 94%;
+    position: absolute;
+    left: 0.5%;
+    top: 3%;
+    background-color: cadetblue;
+}
