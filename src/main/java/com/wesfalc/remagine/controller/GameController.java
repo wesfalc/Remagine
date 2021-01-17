@@ -49,7 +49,7 @@ public class GameController {
     }
 
     @MessageMapping("/game/fetchGameHistory/")
-    public void agentJoinedChat(String jsonMessage) {
+    public void fetchGameHistory(String jsonMessage) {
         log.info("Request to fetch game history for game " + jsonMessage);
 
         Map map = gson.fromJson(jsonMessage, Map.class);
@@ -132,6 +132,26 @@ public class GameController {
         }
     }
 
+    @MessageMapping("/game/join/")
+    public void joinGame(String jsonMessage) {
+        log.info("Player joining game - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+        String playerName = (String) map.get("playerName");
+
+        Game game = joinGame(gameCode, playerName);
+    }
+
+    @MessageMapping("/game/leave/")
+    public void leave(String jsonMessage) {
+        log.info("Player leaving game - " + jsonMessage);
+        Map map = gson.fromJson(jsonMessage, Map.class);
+        String gameCode = (String) map.get("gameCode");
+        String playerName = (String) map.get("playerName");
+
+        leaveGame(gameCode, playerName);
+    }
+
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/userJoined", method = {RequestMethod.POST})
     public void userJoined(HttpServletRequest request, HttpServletResponse response, @RequestParam("gamecode") String gameCode,
@@ -148,9 +168,9 @@ public class GameController {
 
     }
 
-    private Game joinGame(String gameCode, String username) {
+    private Game joinGame(String gameCode, String playerName) {
         Player player = new Player();
-        player.name(username);
+        player.name(playerName);
 
         Game game;
         if (games.containsKey(gameCode)) {
@@ -164,6 +184,15 @@ public class GameController {
         game.addPlayer(player);
 
         return game;
+    }
+
+    private void leaveGame (String gameCode, String playerName) {
+        if (games.containsKey(gameCode)) {
+            Player player = new Player();
+            player.name(playerName);
+            Game game = games.get(gameCode);
+            game.playerLeft(player);
+        }
     }
 
     @CrossOrigin(origins = "*")

@@ -51,6 +51,12 @@ public class Game {
         addNewEvent(new Event(Event.Type.PLAYER_JOINED, player.name()));
     }
 
+    public void playerLeft(Player player) {
+        players.remove(player);
+        playerMap.remove(player.name());
+        addNewEvent(new Event(Event.Type.PLAYER_LEFT, player.name()));
+    }
+
     public void host(Player host) {
         addNewEvent(new Event(Event.Type.HOST_JOINED, host.name()));
     }
@@ -232,7 +238,13 @@ public class Game {
         int newScore = player.score() + playerScore;
         player.score(newScore);
 
-        addNewEvent(new Event(Event.Type.SCORE_UPDATED, playerName + " got " + playerScore + " point(s)."));
+        String pointsString = " points.";
+        if (playerScore == 1)
+        {
+            pointsString = " point.";
+        }
+
+        addNewEvent(new Event(Event.Type.SCORE_UPDATED, playerName + " got " + playerScore + pointsString));
 
         Score scoreMessage = new Score();
         scoreMessage.player(playerName);

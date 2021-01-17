@@ -1,18 +1,58 @@
 <html>
 
 <head>
-    <title>Register</title>
+    <head>
+        <title>ReMagine</title>
+        <link href="game.css" rel="stylesheet">
+        <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+        <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+        <script src="game.js"></script>
+    </head>
+
 </head>
 
 <body>
 
-<form action="/userJoined" method="post">
-    Enter a unique game code here : <input type="text" name="gamecode" value="" /> <br> <br>
-    Enter a unique user name here  : <input type="text" name="username" value="" /> <br>
-    <br>
-    <input type="submit" name="Join" value="Join" />
-</form>
+<div class="mainGameDiv">
+    <div id="registrationDiv" class="registrationDiv">
+        <table id="registrationTable" class="registrationTable">
+            <tr>
+                <td class="remagineLabel">ReMagine</td>
+            </tr>
+            <tr>
+                <td>Game Code
+                <input type="text" class="registrationInput" id="gameCode" name="gameCode" value="" />
+                Player Name
+                <input type="text" class="registrationInput" id="playerName" name="playerName" value="" />
+                <input type="button" id="joinButton" class="joinButton" value="Join"/>
+                <input type="button" id="leaveButton" class="joinButton" value="Leave Game" disabled/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="messagesDiv">
+       <textarea id="gameMessagesTextArea" class="gameMessagesTextArea"></textarea>
+    </div>
+    <div class="scoreboardDiv">
+        <table id="scoreboardTable" class="scoreboardTable">
+        <tr><td colspan="2" align="center">Scoreboard</td></tr>
+        </table>
+    </div>
+
+    <div class="storyDiv">
+        <table id="storyTable" class="storyTable">
+             <tr><td colspan="6">Stories!</td></tr>
+             <tr><td>Player</td><td>Topic</td><td>Story Hint</td><td>Type of Story</td><td>Player likes Story</td><td> </td></tr>
+        </table>
+    </div>
+
+    <div id="adminDiv" class="adminDiv">
+        <table id="adminTable" class="adminTable">
+        </table>
+    </div>
+
+</div>
+
 
 </body>
-
 </html>

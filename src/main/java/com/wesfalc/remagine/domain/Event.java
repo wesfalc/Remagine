@@ -13,6 +13,7 @@ public class Event {
         GAME_STARTED,
         HOST_JOINED,
         PLAYER_JOINED,
+        PLAYER_LEFT,
         NEW_ROUND,
         NEW_TOPIC_SETTER,
         TOPIC_SET,

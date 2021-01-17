@@ -1,14 +1,40 @@
+:root {
+
+    --registration-Div-Top: 1;
+    --registration-Div-Height: 9;
+
+    --messages-Div-Top: calc(var(--registration-Div-Height) + var(--registration-Div-Top) + 1);
+    --messages-Div-Height: 30;
+    --scoreboard-Div-Top: var(--messages-Div-Top);
+
+    --story-Div-Top: calc(var(--messages-Div-Top) + var(--messages-Div-Height) + 1);
+    --story-Div-Height: 47;
+
+    --admin-Div-Top: calc(var(--story-Div-Top) + var(--story-Div-Height) + 1);
+    --admin-Div-Height : calc(99 - var(--admin-Div-Top));
+}
+
 body {
  /*   background-color: #DDDFFF;*/
 }
 
 .remagineLabel {
     color: darkviolet;
+    text-align: center;
+}
+
+.registrationInput {
+    font-size: 26px;
+    width: 15%;
+}
+
+.joinButton {
+    font-size: 26px;
 }
 
 .mainGameDiv {
-    width: 80vw;
-    height: 90vh;
+    width: 98vw;
+    height: 98vh;
     background-color: greenyellow;
     position: absolute;
     top: 50%;
@@ -17,22 +43,37 @@ body {
     transform: translate(-50%, -50%);
 }
 
+.registrationDiv {
+    width: 96%;
+    height: calc(var(--registration-Div-Height) * 1%);
+    position: absolute;
+    left: 2%;
+    top: calc(var(--registration-Div-Top) * 1%);
+    background-color: beige;
+}
+
+.registrationTable {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
 .messagesDiv {
-    width: 46%;
+    width: 47%;
     height: 30%;
     background-color: brown;
     position: relative;
-    top: 2%;
+    top: calc(var(--messages-Div-Top) * 1%);
     left: 2%;
 }
 
 .scoreboardDiv {
-    width: 46%;
+    width: 47%;
     height: 30%;
     background-color: coral;
     position: absolute;
-    top: 2%;
-    left: 52%;
+    top: calc(var(--scoreboard-Div-Top) * 1%);
+    left: 51%;
 }
 
 .scoreboardTable {
@@ -47,10 +88,10 @@ body {
 
 .storyDiv {
     width: 96%;
-    height: 50%;
+    height: calc(var(--story-Div-Height) * 1%);
     position: absolute;
     left: 2%;
-    top: 34%;
+    top: calc(var(--story-Div-Top) * 1%);
     background-color: beige;
 }
 
@@ -89,10 +130,10 @@ td, defaultTd {
 
 .adminDiv {
     width: 96%;
-    height: 12%;
+    height: calc(var(--admin-Div-Height) * 1%);
     position: absolute;
     left: 2%;
-    top: 86%;
+    top: calc(var(--admin-Div-Top) * 1%);
     background-color: deepskyblue;
 }
 

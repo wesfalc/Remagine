@@ -3,18 +3,38 @@ var gameCode = "";
 var stompClient = null;
 var playerIsHost = false;
 var currentTopicSetter = null;
+var messagesTextArea;
 
 window.onload = function () {
-    let cookie = document.cookie;
-    let nameValue = cookie.split("=");
-    let cookieValue = nameValue[1];
 
-    let values = cookieValue.split("-");
-    currentPlayer = values[0];
-    gameCode = values[1];
+    messagesTextArea = document.getElementById("gameMessagesTextArea");
+    messagesTextArea.value = "";
 
-    connect();
-    // don't worry about disconnect(). It automatically disconnects when the page is closed.
+    let joinButton = document.getElementById("joinButton");
+    let leaveButton = document.getElementById("leaveButton");
+    joinButton.addEventListener ("click", function() {
+        connect();
+        // don't worry about disconnect(). It automatically disconnects when the page is closed.
+        joinButton.disabled = true;
+        leaveButton.disabled = false;
+    });
+
+    leaveButton.addEventListener ("click", function() {
+        joinButton.disabled = false;
+        leaveButton.disabled = true;
+
+        let jsonMessage = {};
+        jsonMessage["gameCode"] = gameCode;
+        jsonMessage["playerName"] = currentPlayer;
+        stompClient.send("/game/leave/", {}, JSON.stringify(jsonMessage));
+
+        document.getElementById("gameCode").value="";
+        document.getElementById("playerName").value="";
+
+        stompClient.disconnect(function() {
+            appendTextMessage("Disconnected.");
+        });
+    });
 }
 
 function getTextForMessage(json) {
@@ -62,6 +82,11 @@ function getTextForMessage(json) {
 
 function addAdminControls() {
     let adminTable = document.getElementById("adminTable");
+    let rowLength = adminTable.rows.length;
+
+    for (let i = rowLength-1; i >=0 ; i--) {
+        adminTable.deleteRow(i);
+    }
 
     let newRow;
 
@@ -101,8 +126,17 @@ function appendMessage(command) {
     let json = JSON.parse(text);
     let appendText = getTextForMessage(json);
 
-    let messagesTextArea = document.getElementById("gameMessagesTextArea");
     messagesTextArea.value = messagesTextArea.value + "\n" + appendText;
+    messagesTextArea.scrollTop = messagesTextArea.scrollHeight;
+}
+
+function appendTextMessage(message) {
+    if (messagesTextArea.value === "") {
+        messagesTextArea.value = message;
+    }
+    else {
+        messagesTextArea.value = messagesTextArea.value + "\n" + message;
+    }
     messagesTextArea.scrollTop = messagesTextArea.scrollHeight;
 }
 
@@ -339,8 +373,13 @@ function handleStorySubmitted(command) {
 function connect() {
     let socket = new SockJS('/remagine-websocket');
     stompClient = Stomp.over(socket);
+    appendTextMessage("Connecting...");
     stompClient.connect({}, function (frame) {
-        console.log('Connected: ' + frame);
+        appendTextMessage("Connected.");
+
+        gameCode = document.getElementById("gameCode").value;
+        currentPlayer = document.getElementById("playerName").value;
+
         stompClient.subscribe('/game/messages/' + gameCode, function (command) {
             // do something with game messages
             appendMessage(command);
@@ -367,11 +406,19 @@ function connect() {
             handleStorySubmitted(command);
         });
 
+        let jsonMessage = {};
+        jsonMessage["gameCode"] = gameCode;
+        jsonMessage["playerName"] = currentPlayer;
+        stompClient.send("/game/join/", {}, JSON.stringify(jsonMessage));
+
         fetchGameHistory();
+    }, function (message) {
+        // this is for unintended disconnects
+        appendTextMessage("Connection Lost. Message = " + message);
     });
+
 }
 function fetchGameHistory() {
-    console.log("fetch game history");
     let jsonMessage = {};
     jsonMessage["gameCode"] = gameCode;
     jsonMessage["player"] = currentPlayer;
