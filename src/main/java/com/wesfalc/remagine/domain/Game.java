@@ -143,6 +143,10 @@ public class Game {
         sendTopicSetMessage();
     }
 
+    private void sendStoryRevealedMessage(Story story) {
+        messagingTemplate.convertAndSend("/game/storyRevealed/" + code, gson.toJson(story));
+    }
+
     private void sendStorySubmittedMessage(Story story) {
         Story storyToSend = new Story(); // don't send all the details
 
@@ -213,66 +217,57 @@ public class Game {
                 + player +" is actually " + getTrueOrImaginary(existingStory.trueStory())
                 + " and they " + getLikeOrDislike(existingStory.liked()) + " it."));
 
+        sendStoryRevealedMessage(existingStory);
         scoreTheGuess(existingStory, guessedStory);
-        //addNewEvent();
     }
 
     private void scoreTheGuess(Story existingStory, Story guessedStory) {
-        int guesserScore;
-        int playerScore;
+        int playerTypeOfStoryPoints;
+        int guesserTypeOfStoryPoints;
 
-        String playerName = existingStory.playerName();
-        String guesser = guessedStory.playerName();
+        int playerLikeDislikePoints;
+        int guesserLikeDislikePoints;
 
         if (existingStory.trueStory()) {
             if(guessedStory.trueStory()) {
                 // guesser guessed right
-                playerScore = getScoreFor(GuessType.TRUE_STORY_GUESSED_RIGHT);
-                updateScore(playerName, playerScore);
-                guesserScore = 1;
-                updateScore(guesser, guesserScore);
+                playerTypeOfStoryPoints = getScoreFor(GuessType.TRUE_STORY_GUESSED_RIGHT);
+                guesserTypeOfStoryPoints = 1;
             }
             else {
                // guesser guessed wrong
-                playerScore = getScoreFor(GuessType.TRUE_STORY_GUESSED_WRONG);
-                updateScore(playerName, playerScore);
-                guesserScore = 0;
-                updateScore(guesser, guesserScore);
+                playerTypeOfStoryPoints = getScoreFor(GuessType.TRUE_STORY_GUESSED_WRONG);
+                guesserTypeOfStoryPoints = 0;
             }
         }
         else {
             // imaginary story
             if (!guessedStory.trueStory()) {
                 // guesser guessed right
-                playerScore = getScoreFor(GuessType.IMAGINARY_STORY_GUESSED_RIGHT);
-                updateScore(playerName, playerScore);
-                guesserScore = 1;
-                updateScore(guesser, guesserScore);
+                playerTypeOfStoryPoints = getScoreFor(GuessType.IMAGINARY_STORY_GUESSED_RIGHT);
+                guesserTypeOfStoryPoints = 1;
             }
             else {
                 // guesser guessed wrong
-                playerScore = getScoreFor(GuessType.IMAGINARY_STORY_GUESSED_WRONG);
-                updateScore(playerName, playerScore);
-                guesserScore = 0;
-                updateScore(guesser, guesserScore);
+                playerTypeOfStoryPoints = getScoreFor(GuessType.IMAGINARY_STORY_GUESSED_WRONG);
+                guesserTypeOfStoryPoints = 0;
             }
         }
 
         if (existingStory.liked() == guessedStory.liked()) {
-            playerScore = getScoreFor(GuessType.LIKE_DISLIKE_GUESSED_RIGHT);
-            updateScore(playerName, playerScore);
-            guesserScore = 1;
-            updateScore(guesser, guesserScore);
+            playerLikeDislikePoints = getScoreFor(GuessType.LIKE_DISLIKE_GUESSED_RIGHT);
+            guesserLikeDislikePoints = 1;
         }
         else {
-            playerScore = getScoreFor(GuessType.LIKE_DISLIKE_GUESSED_WRONG);
-            updateScore(playerName, playerScore);
-            guesserScore = 0;
-            updateScore(guesser, guesserScore);
+            playerLikeDislikePoints = getScoreFor(GuessType.LIKE_DISLIKE_GUESSED_WRONG);
+            guesserLikeDislikePoints = 0;
         }
+
+        updateScore(existingStory.playerName(), playerTypeOfStoryPoints, playerLikeDislikePoints);
+        updateScore(guessedStory.playerName(), guesserTypeOfStoryPoints, guesserLikeDislikePoints);
     }
 
-    private void updateScore(String playerName, int playerScore) {
+    private void updateScore(String playerName, int storyTypePoints, int likeDislikePoints) {
         Player player = activePlayerMap.get(playerName);
 
         if (player == null) {
@@ -285,16 +280,20 @@ public class Game {
             return;
         }
 
-        int newScore = player.score() + playerScore;
+        int finalPlayerScore = storyTypePoints + likeDislikePoints;
+
+        int newScore = player.score() + finalPlayerScore;
         player.score(newScore);
 
         String pointsString = " points.";
-        if (playerScore == 1)
+        if (finalPlayerScore == 1)
         {
             pointsString = " point.";
         }
 
-        addNewEvent(new Event(Event.Type.SCORE_UPDATED, playerName + " got " + playerScore + pointsString));
+        addNewEvent(new Event(Event.Type.SCORE_UPDATED, playerName + " got "
+                + storyTypePoints + " + " + likeDislikePoints + " = "
+                + finalPlayerScore + pointsString));
 
         Score scoreMessage = new Score();
         scoreMessage.player(playerName);

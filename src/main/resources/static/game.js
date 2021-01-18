@@ -361,17 +361,22 @@ function handleStorySubmitted(command) {
     let playerName = json["playerName"];
     let storyHint = json["storyHint"];
 
-    if (currentTopicSetter === currentPlayer) {
+    let cell1, cell2, cell3, cell4, cell5, cell6;
+
+    if (currentTopicSetter === currentPlayer || playerName != currentPlayer) {
         let storyTable = document.getElementById("storyTable");
         let rowIndex = storyTable.rows.length;
         let newRow = storyTable.insertRow(rowIndex);
-        let cell1 = newRow.insertCell(0);
-        let cell2 = newRow.insertCell(1);
-        let cell3 = newRow.insertCell(2);
-        let cell4 = newRow.insertCell(3);
-        let cell5 = newRow.insertCell(4);
-        let cell6 = newRow.insertCell(5);
+        newRow.id = "storyOf" + playerName;
+        cell1 = newRow.insertCell(0);
+        cell2 = newRow.insertCell(1);
+        cell3 = newRow.insertCell(2);
+        cell4 = newRow.insertCell(3);
+        cell5 = newRow.insertCell(4);
+        cell6 = newRow.insertCell(5);
+    }
 
+    if (currentTopicSetter === currentPlayer) {
         cell1.innerText = playerName;
         cell2.innerText = " ";
         cell3.innerText = storyHint;
@@ -403,6 +408,45 @@ function handleStorySubmitted(command) {
 
         cell6.appendChild(guessSubmitButton);
     }
+    else if (playerName != currentPlayer) {
+        cell1.innerText = playerName;
+        cell2.innerText = " ";
+        cell3.innerText = storyHint;
+        cell4.innerText = "?";
+        cell5.innerText = "?";
+        cell6.innerText = "Ready";
+    }
+}
+
+function handleStoryRevealed(command) {
+    let text = command.body;
+    let json = JSON.parse(text);
+    let playerName = json["playerName"];
+    let storyHint = json["storyHint"];
+    let trueStory = json["trueStory"];
+    let liked = json["liked"];
+
+    let rowId= "storyOf" + playerName;
+    let row = document.getElementById(rowId);
+
+    if(row != null) {
+        row.cells[3].innerText = getTrueOrImaginary(trueStory);
+        row.cells[4].innerText = getLikeOrDislike(liked);
+    }
+}
+
+function getLikeOrDislike(likeDislike) {
+    if(likeDislike) {
+        return "Like";
+    }
+    return "Dislike";
+}
+
+function getTrueOrImaginary(trueOrImaginary) {
+    if(trueOrImaginary) {
+        return "True";
+    }
+    return "Imaginary";
 }
 
 function connect() {
@@ -439,6 +483,10 @@ function connect() {
 
         stompClient.subscribe('/game/storySubmitted/' + gameCode, function (command) {
             handleStorySubmitted(command);
+        });
+
+        stompClient.subscribe('/game/storyRevealed/' + gameCode, function (command) {
+            handleStoryRevealed(command);
         });
 
         let jsonMessage = {};
