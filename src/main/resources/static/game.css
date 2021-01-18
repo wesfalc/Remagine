@@ -35,15 +35,21 @@ body {
 
 .registrationInput {
     font-size: calc(var(--standard-text-height) + 1px);
+    font-family: "Courier New", monospace;
+    font-weight: 700;
     width: 15%;
 }
 
 .standardInput {
     font-size: calc(var(--standard-text-height) + 1px);
+    font-family: "Courier New", monospace;
+    font-weight: 700;
     width: 45%;
 }
 
 .joinButton {
+    font-family: "Courier New", monospace;
+    font-weight: 700;
     font-size: calc(var(--standard-text-height) + 1px);
 }
 
@@ -120,16 +126,12 @@ body {
 }
 
 td, defaultTd {
-    font-family: Tahoma, sans-serif;
+    font-family: "Courier New", monospace;
     font-size: calc(var(--standard-text-height) + 1px);
     text-align: center;
+    font-weight: 700;
 }
 
-.tdAlignLeft {
-    font-family: Tahoma, sans-serif;
-    font-size: calc(var(--standard-text-height) + 1px);
-    text-align: left;
-}
 
 .gameMessagesTextArea {
     width: 98%;
@@ -137,7 +139,8 @@ td, defaultTd {
     position: absolute;
     top: 1%;
     left: 1%;
-    font-family: Tahoma, sans-serif;
+    font-family: "Courier New", monospace;
+    font-weight: 700;
     font-size: calc(var(--standard-text-height) + 1px);
     background-position: bottom right;
     background-repeat: no-repeat;

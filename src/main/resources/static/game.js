@@ -4,6 +4,10 @@ var stompClient = null;
 var playerIsHost = false;
 var currentTopicSetter = null;
 var messagesTextArea;
+var textForTrue      = "True\u00a0\u00a0\u00a0\u00a0\u00a0";
+var textForImaginary = "Imaginary";
+var textForLike    = "Like\u00a0\u00a0\u00a0";
+var textForDislike = "Dislike";
 
 window.onload = function () {
 
@@ -220,10 +224,15 @@ function handleNewRound(command) {
         topicSubmitButton.className = "joinButton";
         topicSubmitButton.innerText = "Submit Topic";
         topicSubmitButton.addEventListener ("click", function() {
+            let topic = topicInput.value;
+            if(topic == null || topic === "") {
+                return;
+            }
+
             let jsonMessage = {};
             jsonMessage["gameCode"] = gameCode;
             jsonMessage["topicSetter"] = topicSetter;
-            jsonMessage["topic"] = topicInput.value;
+            jsonMessage["topic"] = topic;
             jsonMessage["round"] = roundNumber;
             storyTable.deleteRow(rowIndex);
             stompClient.send("/game/setTopic/", {}, JSON.stringify(jsonMessage));
@@ -251,8 +260,8 @@ function deleteStoryTableRows() {
     return storyTable;
 }
 
-function addPairOfRadioButtons(cell, radioButtonCommonName,
-                               firstButtonValue, secondButtonValue) {
+function addPairOfRadioButtons(cell, radioButtonCommonName, firstButtonText,
+                               firstButtonValue, secondButtonText, secondButtonValue) {
     let firstRadioButton = document.createElement('input');
     firstRadioButton.type = "radio";
     firstRadioButton.name = radioButtonCommonName;
@@ -260,7 +269,7 @@ function addPairOfRadioButtons(cell, radioButtonCommonName,
     firstRadioButton.value = firstButtonValue;
 
     let firstLabel = document.createElement('label');
-    firstLabel.innerText = firstButtonValue;
+    firstLabel.innerText = firstButtonText;
 
     let br1 = document.createElement('br');
 
@@ -271,14 +280,13 @@ function addPairOfRadioButtons(cell, radioButtonCommonName,
     secondRadioButton.value = secondButtonValue;
 
     let secondLabel = document.createElement('label');
-    secondLabel.innerText = secondButtonValue;
+    secondLabel.innerText = secondButtonText;
 
     cell.appendChild(firstRadioButton);
     cell.appendChild(firstLabel);
     cell.appendChild(br1);
     cell.appendChild(secondRadioButton);
     cell.appendChild(secondLabel);
-    cell.className = "tdAlignLeft";
 }
 
 function handleTopicSet(command) {
@@ -320,9 +328,13 @@ function handleTopicSet(command) {
         storyHintInput.className = "standardInput";
         cell3.appendChild(storyHintInput);
 
-        addPairOfRadioButtons(cell4, "storyType", "True", "Imaginary");
+        addPairOfRadioButtons(cell4, "storyType",
+            textForTrue, "True", textForImaginary, "Imaginary");
 
-        addPairOfRadioButtons(cell5, "likeDislike", "Like", "Dislike");
+
+        addPairOfRadioButtons(cell5, "likeDislike",
+            textForLike, "Like", textForDislike, "Dislike");
+
 
         let storySubmitButton = document.createElement('button');
         storySubmitButton.className = "joinButton";
@@ -332,6 +344,10 @@ function handleTopicSet(command) {
             let likeDislike = document.querySelector('input[name="likeDislike"]:checked').value;
 
             let storyHint = storyHintInput.value;
+
+            if (storyHint == null || storyHint ==="") {
+                return;
+            }
 
             let jsonMessage = {};
             jsonMessage["gameCode"] = gameCode;
@@ -380,8 +396,11 @@ function handleStorySubmitted(command) {
         cell1.innerText = playerName;
         cell2.innerText = " ";
         cell3.innerText = storyHint;
-        addPairOfRadioButtons(cell4, playerName + "-storyType", "True", "Imaginary");
-        addPairOfRadioButtons(cell5, playerName + "-likeDislike", "Like", "Dislike");
+        addPairOfRadioButtons(cell4, playerName + "-storyType",
+                  textForTrue, "True", textForImaginary, "Imaginary");
+
+        addPairOfRadioButtons(cell5, playerName + "-likeDislike",
+            textForLike, "Like", textForDislike, "Dislike");
 
         let guessSubmitButton = document.createElement('button');
         guessSubmitButton.className = "joinButton";
