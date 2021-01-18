@@ -128,6 +128,7 @@ function addAdminControls(startGame) {
 
         let startGameButton = document.createElement('button');
         startGameButton.innerText = "Start Game";
+        startGameButton.className = "joinButton";
         startGameButton.addEventListener("click", function () {
             let jsonMessage = {};
             jsonMessage["gameCode"] = gameCode;
@@ -139,6 +140,7 @@ function addAdminControls(startGame) {
     }
 
     let nextRoundButton = document.createElement('button');
+    nextRoundButton.className = "joinButton";
     nextRoundButton.innerText = "Next Round";
     nextRoundButton.addEventListener("click", function () {
        let jsonMessage = {};
@@ -211,9 +213,11 @@ function handleNewRound(command) {
 
     if (topicSetter === currentPlayer) {
         let topicInput = document.createElement('input');
+        topicInput.className = "standardInput";
         cell2.appendChild(topicInput);
 
         let topicSubmitButton = document.createElement('button');
+        topicSubmitButton.className = "joinButton";
         topicSubmitButton.innerText = "Submit Topic";
         topicSubmitButton.addEventListener ("click", function() {
             let jsonMessage = {};
@@ -313,6 +317,7 @@ function handleTopicSet(command) {
         cell2.innerText = "";
 
         let storyHintInput = document.createElement('input');
+        storyHintInput.className = "standardInput";
         cell3.appendChild(storyHintInput);
 
         addPairOfRadioButtons(cell4, "storyType", "True", "Imaginary");
@@ -320,6 +325,7 @@ function handleTopicSet(command) {
         addPairOfRadioButtons(cell5, "likeDislike", "Like", "Dislike");
 
         let storySubmitButton = document.createElement('button');
+        storySubmitButton.className = "joinButton";
         storySubmitButton.innerText = "Submit Story";
         storySubmitButton.addEventListener ("click", function() {
             let storyType = document.querySelector('input[name="storyType"]:checked').value;
@@ -373,6 +379,7 @@ function handleStorySubmitted(command) {
         addPairOfRadioButtons(cell5, playerName + "-likeDislike", "Like", "Dislike");
 
         let guessSubmitButton = document.createElement('button');
+        guessSubmitButton.className = "joinButton";
         guessSubmitButton.innerText = "Submit Guess";
         guessSubmitButton.addEventListener ("click", function() {
             let storyType = document.querySelector("input[name=" + CSS.escape(playerName) + "-storyType]:checked").value;

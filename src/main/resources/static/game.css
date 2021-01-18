@@ -12,7 +12,13 @@
 
     --admin-Div-Top: calc(var(--story-Div-Top) + var(--story-Div-Height) + 1);
     --admin-Div-Height : calc(99 - var(--admin-Div-Top));
+
+    --remagine-label-height: calc(2.7vh);
+    --standard-text-height: calc(2.4vh);
 }
+/*
+check https://css-tricks.com/a-complete-guide-to-calc-in-css/
+ */
 
 body {
  /*   background-color: #DDDFFF;*/
@@ -21,15 +27,24 @@ body {
 .remagineLabel {
     color: darkviolet;
     text-align: center;
+    font-family: "Times New Roman", Times, serif;
+    font-style: oblique;
+    font-weight: 900;
+    font-size: calc(var(--remagine-label-height) + 1px);
 }
 
 .registrationInput {
-    font-size: 26px;
+    font-size: calc(var(--standard-text-height) + 1px);
     width: 15%;
 }
 
+.standardInput {
+    font-size: calc(var(--standard-text-height) + 1px);
+    width: 45%;
+}
+
 .joinButton {
-    font-size: 26px;
+    font-size: calc(var(--standard-text-height) + 1px);
 }
 
 .mainGameDiv {
@@ -106,13 +121,13 @@ body {
 
 td, defaultTd {
     font-family: Tahoma, sans-serif;
-    font-size: 26px;
+    font-size: calc(var(--standard-text-height) + 1px);
     text-align: center;
 }
 
 .tdAlignLeft {
     font-family: Tahoma, sans-serif;
-    font-size: 26px;
+    font-size: calc(var(--standard-text-height) + 1px);
     text-align: left;
 }
 
@@ -123,7 +138,7 @@ td, defaultTd {
     top: 1%;
     left: 1%;
     font-family: Tahoma, sans-serif;
-    font-size: 26px;
+    font-size: calc(var(--standard-text-height) + 1px);
     background-position: bottom right;
     background-repeat: no-repeat;
 }
