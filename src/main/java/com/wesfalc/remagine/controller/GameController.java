@@ -175,13 +175,12 @@ public class GameController {
         Game game;
         if (games.containsKey(gameCode)) {
             game = games.get(gameCode);
+            game.addPlayer(player);
         }
         else {
-            game = new Game(messagingTemplate, gameCode);
-            game.host(player);
+            game = new Game(messagingTemplate, gameCode, player);
             games.put(gameCode, game);
         }
-        game.addPlayer(player);
 
         return game;
     }

@@ -14,8 +14,9 @@ import java.util.*;
 @Accessors (fluent = true)
 @Slf4j
 public class Game {
-    private List<Player> players = new ArrayList<>();
-    private Map<String, Player> playerMap = new HashMap<>(); // for convenience and due to time contraints!
+    private List<Player> activePlayers = new ArrayList<>();
+    private Map<String, Player> activePlayerMap = new HashMap<>(); // for convenience and due to time contraints!
+    private Map<String, Player> inactivePlayerMap = new HashMap<>();
     private Player host;
     private String code;
     private boolean started = false;
@@ -39,31 +40,69 @@ public class Game {
 
     private SimpMessageSendingOperations messagingTemplate;
 
-    public Game(SimpMessageSendingOperations messagingTemplate, String code) {
+    public Game(SimpMessageSendingOperations messagingTemplate, String code, Player host) {
         this.messagingTemplate = messagingTemplate;
         this.code = code;
+        host(host);
+        addPlayer(host);
         addNewEvent(new Event(Event.Type.GAME_CREATED, code));
     }
 
     public void addPlayer(Player player) {
-        players.add(player);
-        playerMap.put(player.name(), player);
+        if (activePlayerMap.containsKey(player.name())) {
+            addNewEvent(new Event(Event.Type.PLAYER_ALREADY_IN_GAME, player.name()));
+            return;
+        }
+
+        if(inactivePlayerMap.containsKey(player.name())) {
+            Player existingPlayer = inactivePlayerMap.get(player.name());
+            activePlayers.add(existingPlayer);
+            activePlayerMap.put(existingPlayer.name(), existingPlayer);
+            addNewEvent(new Event(Event.Type.PLAYER_REJOINED, player.name()));
+            setHostIfNull();
+            return;
+        }
+
+        activePlayers.add(player);
+        activePlayerMap.put(player.name(), player);
         addNewEvent(new Event(Event.Type.PLAYER_JOINED, player.name()));
+        setHostIfNull();
     }
 
     public void playerLeft(Player player) {
-        players.remove(player);
-        playerMap.remove(player.name());
+        Player existingPlayer = activePlayerMap.get(player.name());
+        if(existingPlayer == null) {
+            return;
+        }
+
+        inactivePlayerMap.put(existingPlayer.name(), existingPlayer);
+        activePlayers.remove(existingPlayer);
+        activePlayerMap.remove(player.name());
         addNewEvent(new Event(Event.Type.PLAYER_LEFT, player.name()));
+        
+        if (existingPlayer == host) {
+            host = null;
+            setHostIfNull();
+        }
     }
 
-    public void host(Player host) {
+    private void setHostIfNull() {
+        if (host == null) {
+            if (activePlayers.size() > 0) {
+                host = activePlayers.get(0);
+                addNewEvent(new Event(Event.Type.HOST_CHANGED, host.name()));
+            }
+        }
+    }
+
+    private void host(Player host) {
+        this.host = host;
         addNewEvent(new Event(Event.Type.HOST_JOINED, host.name()));
     }
 
     public void start() {
         addNewEvent(new Event(Event.Type.GAME_STARTED, "Game started."));
-        Collections.shuffle(players);
+        Collections.shuffle(activePlayers);
         nextRound();
     }
 
@@ -123,14 +162,14 @@ public class Game {
 
     private Player getTopicSetterForThisRound() {
         playerIndex ++;
-        if (playerIndex >= players.size()) {
+        if (playerIndex >= activePlayers.size()) {
             playerIndex = 0;
         }
-        return players.get(playerIndex);
+        return activePlayers.get(playerIndex);
     }
 
     public void submitPlayerStory(String playerName, String storyHint, String storyType, String likeDislike) {
-        Player player = playerMap.get(playerName);
+        Player player = activePlayerMap.get(playerName);
         if (player == null) {
             log.warn("Received player story for unknown player " + playerName + " gameCode = " + code);
             return;
@@ -234,7 +273,18 @@ public class Game {
     }
 
     private void updateScore(String playerName, int playerScore) {
-        Player player = playerMap.get(playerName);
+        Player player = activePlayerMap.get(playerName);
+
+        if (player == null) {
+            log.info("updating score for inactive player " + playerName);
+            player = inactivePlayerMap.get(playerName);
+        }
+
+        if (player == null) {
+            log.warn("player " + playerName + " does not exist in game " + code + " . Cannot update score.");
+            return;
+        }
+
         int newScore = player.score() + playerScore;
         player.score(newScore);
 

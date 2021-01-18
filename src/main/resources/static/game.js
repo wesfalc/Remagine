@@ -34,6 +34,7 @@ window.onload = function () {
         stompClient.disconnect(function() {
             appendTextMessage("Disconnected.");
         });
+        removeAdminTableRows();
     });
 }
 
@@ -46,14 +47,27 @@ function getTextForMessage(json) {
         if (eventDesc === currentPlayer) {
             appendText = "You are the host of this game.";
             playerIsHost = true;
-            addAdminControls();
+            addAdminControls(true);
         }
         else {
             appendText = eventDesc + " is the host of this game.";
         }
     }
+    else if (type === "HOST_CHANGED") {
+        if (eventDesc === currentPlayer) {
+            appendText = "You are the new host of this game.";
+            playerIsHost = true;
+            addAdminControls(false);
+        }
+        else {
+            appendText = eventDesc + " is the new host of this game.";
+        }
+    }
     else if (type === "PLAYER_JOINED") {
         appendText = eventDesc + " joined the game.";
+    }
+    else if (type === "PLAYER_REJOINED") {
+        appendText = eventDesc + " rejoined the game.";
     }
     else if (type === "GAME_CREATED") {
         appendText = "Game created with unique code '" + eventDesc + "'";
@@ -73,6 +87,12 @@ function getTextForMessage(json) {
     else if (type === "STORY_SUBMITTED") {
         appendText = eventDesc + " is ready with a story.";
     }
+    else if (type === "PLAYER_ALREADY_IN_GAME") {
+        appendText = eventDesc + " is already in the game. ";
+    }
+    else if (type === "PLAYER_LEFT") {
+        appendText = eventDesc + " left the game. ";
+    }
     else {
         appendText = eventDesc;
     }
@@ -80,13 +100,18 @@ function getTextForMessage(json) {
     return appendText;
 }
 
-function addAdminControls() {
+function removeAdminTableRows() {
     let adminTable = document.getElementById("adminTable");
     let rowLength = adminTable.rows.length;
 
     for (let i = rowLength-1; i >=0 ; i--) {
         adminTable.deleteRow(i);
     }
+    return adminTable;
+}
+
+function addAdminControls(startGame) {
+    let adminTable = removeAdminTableRows();
 
     let newRow;
 
@@ -97,18 +122,21 @@ function addAdminControls() {
 
     newRow = adminTable.insertRow(1);
     cell1 = newRow.insertCell(0);
-    cell2 = newRow.insertCell(1);
+    let cell2 = newRow.insertCell(1);
 
-    let startGameButton = document.createElement('button');
-    startGameButton.innerText = "Start Game";
-    startGameButton.addEventListener ("click", function() {
-        let jsonMessage = {};
-        jsonMessage["gameCode"] = gameCode;
-        stompClient.send("/game/start/", {}, JSON.stringify(jsonMessage));
-        startGameButton.disabled = true;
-    });
+    if (startGame) {
 
-    cell1.appendChild(startGameButton);
+        let startGameButton = document.createElement('button');
+        startGameButton.innerText = "Start Game";
+        startGameButton.addEventListener("click", function () {
+            let jsonMessage = {};
+            jsonMessage["gameCode"] = gameCode;
+            stompClient.send("/game/start/", {}, JSON.stringify(jsonMessage));
+            startGameButton.disabled = true;
+        });
+
+        cell1.appendChild(startGameButton);
+    }
 
     let nextRoundButton = document.createElement('button');
     nextRoundButton.innerText = "Next Round";
@@ -411,16 +439,9 @@ function connect() {
         jsonMessage["playerName"] = currentPlayer;
         stompClient.send("/game/join/", {}, JSON.stringify(jsonMessage));
 
-        fetchGameHistory();
     }, function (message) {
         // this is for unintended disconnects
         appendTextMessage("Connection Lost. Message = " + message);
     });
 
-}
-function fetchGameHistory() {
-    let jsonMessage = {};
-    jsonMessage["gameCode"] = gameCode;
-    jsonMessage["player"] = currentPlayer;
-    stompClient.send("/game/fetchGameHistory/", {}, JSON.stringify(jsonMessage));
 }
