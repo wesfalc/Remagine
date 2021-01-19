@@ -21,16 +21,28 @@ check https://css-tricks.com/a-complete-guide-to-calc-in-css/
  */
 
 body {
- /*   background-color: #DDDFFF;*/
+   background-color: black;
 }
 
 .remagineLabel {
-    color: darkviolet;
+    color: #eb7b0c;
     text-align: center;
     font-family: "Times New Roman", Times, serif;
     font-style: oblique;
     font-weight: 900;
     font-size: calc(var(--remagine-label-height) + 1px);
+}
+
+input {
+    background: none;
+    border-color: #eb7b0c;
+    color: #eb7b0c;
+}
+
+label {
+    font-size: calc(var(--standard-text-height) + 1px);
+    font-family: "Courier New", monospace;
+    font-weight: 700;
 }
 
 .registrationInput {
@@ -51,17 +63,27 @@ body {
     font-family: "Courier New", monospace;
     font-weight: 700;
     font-size: calc(var(--standard-text-height) + 1px);
+    color: #eb7b0c;
+    border-color: #eb7b0c;
+    background: none;
 }
+
+.joinButton:disabled,
+.joinButton[disabled]{
+    color: grey;
+}
+
 
 .mainGameDiv {
     width: 98vw;
     height: 98vh;
-    background-color: greenyellow;
     position: absolute;
     top: 50%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%);
+    background-image: url("nightsky.jpg");
+    background-size: cover;
 }
 
 .registrationDiv {
@@ -70,7 +92,6 @@ body {
     position: absolute;
     left: 2%;
     top: calc(var(--registration-Div-Top) * 1%);
-    background-color: beige;
 }
 
 .registrationTable {
@@ -80,31 +101,45 @@ body {
 }
 
 .messagesDiv {
-    width: 47%;
+    width: 63%;
     height: 30%;
-    background-color: brown;
     position: relative;
     top: calc(var(--messages-Div-Top) * 1%);
     left: 2%;
 }
 
 .scoreboardDiv {
-    width: 47%;
+    width: 31%;
     height: 30%;
-    background-color: coral;
     position: absolute;
     top: calc(var(--scoreboard-Div-Top) * 1%);
-    left: 51%;
+    left: 67%;
 }
 
+.scoreboardLabel {
+    width: 96%;
+    position: absolute;
+    height: 10%;
+    text-align: center;
+    display: block;
+    left: 2%;
+    color: #eb7b0c;
+}
 .scoreboardTable {
     width: 96%;
-    height: 96%;
+    height: 86%;
     position: absolute;
     left: 2%;
-    top: 2%;
+    top: 12%;
     border-spacing: 5px;
-    background-color: antiquewhite;
+    table-layout: fixed;
+}
+.scoreboardTd {
+    width: 50%;
+}
+.scoreboardTr {
+    /*height: 10%;*/
+    max-height: 10%;
 }
 
 .storyDiv {
@@ -113,16 +148,21 @@ body {
     position: absolute;
     left: 2%;
     top: calc(var(--story-Div-Top) * 1%);
-    background-color: beige;
 }
 
 .storyTable {
     width: 96%;
-    height: 96%;
+    /*height: 96%;*/
+
+    max-height: 96%;
     position: absolute;
     left: 2%;
     top: 2%;
-    background-color: blanchedalmond;
+    table-layout: fixed;
+}
+
+.storyTr {
+    height: 10%;
 }
 
 td, defaultTd {
@@ -130,6 +170,8 @@ td, defaultTd {
     font-size: calc(var(--standard-text-height) + 1px);
     text-align: center;
     font-weight: 700;
+    color: #eb7b0c;
+    /*border : solid 1px;*/
 }
 
 
@@ -142,8 +184,15 @@ td, defaultTd {
     font-family: "Courier New", monospace;
     font-weight: 700;
     font-size: calc(var(--standard-text-height) + 1px);
-    background-position: bottom right;
-    background-repeat: no-repeat;
+    background: transparent;
+    border-style: none;
+    border-color: Transparent;
+    color: #eb7b0c;
+    overflow: hidden;
+}
+
+.gameMessagesTextArea:hover {
+    overflow: auto;
 }
 
 .adminDiv {
@@ -152,7 +201,6 @@ td, defaultTd {
     position: absolute;
     left: 2%;
     top: calc(var(--admin-Div-Top) * 1%);
-    background-color: deepskyblue;
 }
 
 .adminTable {
@@ -161,5 +209,4 @@ td, defaultTd {
     position: absolute;
     left: 0.5%;
     top: 3%;
-    background-color: cadetblue;
 }

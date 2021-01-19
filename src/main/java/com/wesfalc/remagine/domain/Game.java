@@ -103,6 +103,7 @@ public class Game {
     public void start() {
         addNewEvent(new Event(Event.Type.GAME_STARTED, "Game started."));
         Collections.shuffle(activePlayers);
+        sendInitialScores();
         nextRound();
     }
 
@@ -305,6 +306,16 @@ public class Game {
     private void sendScore(String gameCode, String scoreJson) {
         messagingTemplate.convertAndSend("/game/score/" + code, scoreJson);
     }
+
+    private void sendInitialScores() {
+        for(Player player : activePlayers) {
+            Score scoreMessage = new Score();
+            scoreMessage.player(player.name());
+            scoreMessage.score(player.score());
+            sendScore(code, gson.toJson(scoreMessage));
+        }
+    }
+
 
     private int getScoreFor(GuessType guessType) {
         switch (guessType) {

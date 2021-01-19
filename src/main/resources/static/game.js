@@ -189,11 +189,14 @@ function updateScore(command) {
         let rowLength = scoreboardTable.rows.length;
         playerRow = scoreboardTable.insertRow(rowLength);
         playerRow.id = "row-" + player;
+        playerRow.className = "scoreboardTr";
         playerRow.insertCell(0);
         playerRow.insertCell(1);
     }
     let playerCell = playerRow.cells[0];
+    playerCell.className = "scoreboardTd";
     let scoreCell = playerRow.cells[1];
+    scoreCell.className = "scoreboardTd";
     playerCell.innerText = player;
     scoreCell.innerText = score;
 }
@@ -211,6 +214,7 @@ function handleNewRound(command) {
     let newRow = null;
 
     newRow = storyTable.insertRow(rowIndex);
+    newRow.className = "storyTr";
     let cell1 = newRow.insertCell(0);
     let cell2 = newRow.insertCell(1);
     cell1.innerText = topicSetter;
@@ -253,7 +257,7 @@ function deleteStoryTableRows() {
     let storyTable = document.getElementById("storyTable");
     let rowLength = storyTable.rows.length;
 
-    for (let i = rowLength-1; i >=2 ; i--) {
+    for (let i = rowLength-1; i >=1 ; i--) {
         storyTable.deleteRow(i);
         console.log("deleted row " + i);
     }
@@ -305,6 +309,7 @@ function handleTopicSet(command) {
     let newRow = null;
 
     newRow = storyTable.insertRow(rowIndex);
+    newRow.className = "storyTr";
     let cell1 = newRow.insertCell(0);
     let cell2 = newRow.insertCell(1);
     cell1.innerText = topicSetter;
@@ -314,6 +319,7 @@ function handleTopicSet(command) {
 
     if (topicSetter != currentPlayer) {
         newRow = storyTable.insertRow(rowIndex);
+        newRow.className = "storyTr";
         cell1 = newRow.insertCell(0);
         cell2 = newRow.insertCell(1);
         let cell3 = newRow.insertCell(2);
@@ -383,6 +389,7 @@ function handleStorySubmitted(command) {
         let storyTable = document.getElementById("storyTable");
         let rowIndex = storyTable.rows.length;
         let newRow = storyTable.insertRow(rowIndex);
+        newRow.className = "storyTr";
         newRow.id = "storyOf" + playerName;
         cell1 = newRow.insertCell(0);
         cell2 = newRow.insertCell(1);

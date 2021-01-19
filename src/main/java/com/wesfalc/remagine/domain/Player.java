@@ -14,5 +14,5 @@ import lombok.experimental.Accessors;
 public class Player {
      private String name;
      @EqualsAndHashCode.Exclude
-     private int score;
+     private int score = 0;
 }
