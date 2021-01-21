@@ -42,26 +42,6 @@ public class GameController {
         messagingTemplate.convertAndSend("/game/score/" + gameCode, scoreJson);
     }
 
-    private void sendGameHistory(Game game, String player) {
-        for(Event event : game.history()) {
-            sendPlayerMessage(game.code(), player, gson.toJson(event));
-        }
-    }
-
-    @MessageMapping("/game/fetchGameHistory/")
-    public void fetchGameHistory(String jsonMessage) {
-        log.info("Request to fetch game history for game " + jsonMessage);
-
-        Map map = gson.fromJson(jsonMessage, Map.class);
-        String gameCode = (String) map.get("gameCode");
-        String player = (String) map.get("player");
-
-        Game game = games.get(gameCode);
-        if (game != null) {
-            sendGameHistory(game, player);
-        }
-    }
-
     @MessageMapping("/game/setTopic/")
     public void setTopic(String jsonMessage) {
         log.info("Request to set topic - " + jsonMessage);

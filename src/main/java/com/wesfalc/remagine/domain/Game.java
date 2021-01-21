@@ -15,7 +15,7 @@ import java.util.*;
 @Slf4j
 public class Game {
     private List<Player> activePlayers = new ArrayList<>();
-    private Map<String, Player> activePlayerMap = new HashMap<>(); // for convenience and due to time contraints!
+    private Map<String, Player> activePlayerMap = new HashMap<>();
     private Map<String, Player> inactivePlayerMap = new HashMap<>();
     private Player host;
     private String code;
@@ -35,7 +35,6 @@ public class Game {
         LIKE_DISLIKE_GUESSED_WRONG
     }
 
-    private List<Event> history = new ArrayList<>();
     Gson gson = new Gson();
 
     private SimpMessageSendingOperations messagingTemplate;
@@ -108,7 +107,6 @@ public class Game {
     }
 
     private void addNewEvent(Event event) {
-        history.add(event);
         messagingTemplate.convertAndSend("/game/messages/" + code, gson.toJson(event));
     }
 
