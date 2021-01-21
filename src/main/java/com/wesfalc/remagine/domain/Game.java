@@ -1,5 +1,6 @@
 package com.wesfalc.remagine.domain;
 
+import com.google.common.cache.RemovalCause;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +21,7 @@ public class Game {
     private Player host;
     private String code;
     private boolean started = false;
-    private boolean finished = true;
+    private boolean finished = false;
 
     private Player topicSetter;
     private int playerIndex = -1;
@@ -369,5 +370,22 @@ public class Game {
             return "true";
         }
         return "imaginary";
+    }
+
+    public void terminate(RemovalCause cause) {
+        finished = true;
+        if (cause == RemovalCause.SIZE) {
+            log.info("Too many games on server! Game " + code + " terminated.");
+            addNewEvent(new Event(Event.Type.GAME_TERMINATED_DUE_TO_TOO_MANY_SIMULTANEOUS_GAMES, "Game terminated. " +
+                    "Sorry! Too many games being played simultaneously on the server!"));
+        }
+        else if (cause == RemovalCause.EXPIRED) {
+            log.info("Game " + code + " terminated due to inactivity.");
+            addNewEvent(new Event(Event.Type.GAME_TERMINATED_DUE_TO_INACTIVITY, "Game terminated due to inactivity."));
+        }
+        else {
+            log.info("Game terminated. Cause = " + cause);
+            addNewEvent(new Event(Event.Type.GAME_TERMINATED, "Game terminated. Cause = " + cause));
+        }
     }
 }

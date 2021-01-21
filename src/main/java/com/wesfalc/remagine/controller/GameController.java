@@ -1,5 +1,7 @@
 package com.wesfalc.remagine.controller;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import com.wesfalc.remagine.domain.Game;
 import com.wesfalc.remagine.domain.Player;
@@ -9,15 +11,30 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Controller
 public class GameController {
 
-    private HashMap<String, Game> games = new HashMap<>();
+    private static final int MAXIMUM_SIMULTANEOUS_GAMES = 10000;
+    private static final int INACTIVITY_TIMEOUT_MINUTES = 60;
+    private Cache<String, Game> games;
     Gson gson = new Gson();
+
+    public GameController() {
+        games = CacheBuilder.newBuilder()
+                .maximumSize(MAXIMUM_SIMULTANEOUS_GAMES)
+                .expireAfterAccess(INACTIVITY_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+                .removalListener(removalNotification -> {
+                    Game game = (Game) removalNotification.getValue();
+                    game.terminate(removalNotification.getCause());
+                })
+                .concurrencyLevel(4)
+                .recordStats()
+                .build();
+    }
 
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
@@ -29,7 +46,7 @@ public class GameController {
         String gameCode = (String) map.get("gameCode");
         String topic = (String) map.get("topic");
 
-        Game game = games.get(gameCode);
+        Game game = games.getIfPresent(gameCode);
         if (game != null) {
             game.setTopic(topic);
         }
@@ -45,7 +62,7 @@ public class GameController {
         String storyType = (String) map.get("storyType");
         String likeDislike = (String) map.get("likeDislike");
 
-        Game game = games.get(gameCode);
+        Game game = games.getIfPresent(gameCode);
         if (game != null) {
             game.submitPlayerStory(player, storyHint, storyType, likeDislike);
         }
@@ -61,7 +78,7 @@ public class GameController {
         String likeDislike = (String) map.get("likeDislike");
         String guesser = (String) map.get("guesser");
 
-        Game game = games.get(gameCode);
+        Game game = games.getIfPresent(gameCode);
         if (game != null) {
             game.submitGuess(player, guesser, storyType, likeDislike);
         }
@@ -73,7 +90,7 @@ public class GameController {
         Map map = gson.fromJson(jsonMessage, Map.class);
         String gameCode = (String) map.get("gameCode");
 
-        Game game = games.get(gameCode);
+        Game game = games.getIfPresent(gameCode);
         if (game != null) {
             game.start();
         }
@@ -85,7 +102,7 @@ public class GameController {
         Map map = gson.fromJson(jsonMessage, Map.class);
         String gameCode = (String) map.get("gameCode");
 
-        Game game = games.get(gameCode);
+        Game game = games.getIfPresent(gameCode);
         if (game != null) {
             game.nextRound();
         }
@@ -118,8 +135,8 @@ public class GameController {
         player.name(playerName);
 
         Game game;
-        if (games.containsKey(gameCode)) {
-            game = games.get(gameCode);
+        if (games.getIfPresent(gameCode) != null) {
+            game = games.getIfPresent(gameCode);
             game.addPlayer(player);
         }
         else {
@@ -131,10 +148,10 @@ public class GameController {
     }
 
     private void leaveGame (String gameCode, String playerName) {
-        if (games.containsKey(gameCode)) {
+        if (games.getIfPresent(gameCode) != null) {
             Player player = new Player();
             player.name(playerName);
-            Game game = games.get(gameCode);
+            Game game = games.getIfPresent(gameCode);
             game.playerLeft(player);
         }
     }
