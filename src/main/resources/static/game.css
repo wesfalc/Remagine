@@ -189,6 +189,7 @@ td, defaultTd {
     border-color: Transparent;
     color: #eb7b0c;
     overflow: hidden;
+    resize: none;
 }
 
 .gameMessagesTextArea:hover {
