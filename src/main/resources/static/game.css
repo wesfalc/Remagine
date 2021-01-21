@@ -13,8 +13,8 @@
     --admin-Div-Top: calc(var(--story-Div-Top) + var(--story-Div-Height) + 1);
     --admin-Div-Height : calc(99 - var(--admin-Div-Top));
 
-    --remagine-label-height: calc(2.7vh);
-    --standard-text-height: calc(2.4vh);
+    --remagine-label-size: calc(1.4vw);
+    --standard-text-size: calc(1.24vw);
 }
 /*
 check https://css-tricks.com/a-complete-guide-to-calc-in-css/
@@ -30,7 +30,7 @@ body {
     font-family: "Times New Roman", Times, serif;
     font-style: oblique;
     font-weight: 900;
-    font-size: calc(var(--remagine-label-height) + 1px);
+    font-size: calc(var(--remagine-label-size) + 1px);
 }
 
 input {
@@ -40,29 +40,29 @@ input {
 }
 
 label {
-    font-size: calc(var(--standard-text-height) + 1px);
+    font-size: calc(var(--standard-text-size) + 1px);
     font-family: "Courier New", monospace;
     font-weight: 700;
 }
 
 .registrationInput {
-    font-size: calc(var(--standard-text-height) + 1px);
+    font-size: calc(var(--standard-text-size) + 1px);
     font-family: "Courier New", monospace;
     font-weight: 700;
     width: 15%;
 }
 
 .standardInput {
-    font-size: calc(var(--standard-text-height) + 1px);
+    font-size: calc(var(--standard-text-size) + 1px);
     font-family: "Courier New", monospace;
     font-weight: 700;
-    width: 45%;
+    width: 96%;
 }
 
 .joinButton {
     font-family: "Courier New", monospace;
     font-weight: 700;
-    font-size: calc(var(--standard-text-height) + 1px);
+    font-size: calc(var(--standard-text-size) + 1px);
     color: #eb7b0c;
     border-color: #eb7b0c;
     background: none;
@@ -167,7 +167,7 @@ label {
 
 td, defaultTd {
     font-family: "Courier New", monospace;
-    font-size: calc(var(--standard-text-height) + 1px);
+    font-size: calc(var(--standard-text-size) + 1px);
     text-align: center;
     font-weight: 700;
     color: #eb7b0c;
@@ -183,7 +183,7 @@ td, defaultTd {
     left: 1%;
     font-family: "Courier New", monospace;
     font-weight: 700;
-    font-size: calc(var(--standard-text-height) + 1px);
+    font-size: calc(var(--standard-text-size) + 1px);
     background: transparent;
     border-style: none;
     border-color: Transparent;
