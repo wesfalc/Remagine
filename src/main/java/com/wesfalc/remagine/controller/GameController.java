@@ -1,22 +1,14 @@
 package com.wesfalc.remagine.controller;
 
 import com.google.gson.Gson;
-import com.wesfalc.remagine.domain.Event;
 import com.wesfalc.remagine.domain.Game;
 import com.wesfalc.remagine.domain.Player;
-import com.wesfalc.remagine.domain.Score;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,24 +22,11 @@ public class GameController {
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
 
-    private void sendGameMessage(String gameCode, Object message) {
-        messagingTemplate.convertAndSend("/game/messages/" + gameCode, message);
-    }
-
-    private void sendPlayerMessage(String gameCode, String player, Object message) {
-        messagingTemplate.convertAndSend("/game/messages/" + gameCode+"/" + player, message);
-    }
-
-    private void sendScore(String gameCode, String scoreJson) {
-        messagingTemplate.convertAndSend("/game/score/" + gameCode, scoreJson);
-    }
-
     @MessageMapping("/game/setTopic/")
     public void setTopic(String jsonMessage) {
         log.info("Request to set topic - " + jsonMessage);
         Map map = gson.fromJson(jsonMessage, Map.class);
         String gameCode = (String) map.get("gameCode");
-        String topicSetter = (String) map.get("topicSetter");
         String topic = (String) map.get("topic");
 
         Game game = games.get(gameCode);
@@ -121,7 +100,7 @@ public class GameController {
         String playerName = (String) map.get("playerName");
         playerName = playerName.trim();
 
-        Game game = joinGame(gameCode, playerName);
+        joinGame(gameCode, playerName);
     }
 
     @MessageMapping("/game/leave/")
@@ -132,22 +111,6 @@ public class GameController {
         String playerName = (String) map.get("playerName");
 
         leaveGame(gameCode, playerName);
-    }
-
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/userJoined", method = {RequestMethod.POST})
-    public void userJoined(HttpServletRequest request, HttpServletResponse response, @RequestParam("gamecode") String gameCode,
-            @RequestParam("username") String username) throws IOException {
-        log.info("gameCode = " + gameCode + " userJoined = " + username);
-        Game game = joinGame(gameCode, username);
-
-        request.getSession().setAttribute("gamecode", game.code());
-        request.getSession().setAttribute("username", username);
-        response.setStatus(302);
-        Cookie cookie = new Cookie("remagine", username + "-" + gameCode);
-        response.addCookie(cookie);
-        response.sendRedirect("/home.html");
-
     }
 
     private Game joinGame(String gameCode, String playerName) {
@@ -175,40 +138,4 @@ public class GameController {
             game.playerLeft(player);
         }
     }
-
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/randomText", method = {RequestMethod.POST})
-    public void randomText(HttpServletRequest request, HttpServletResponse response, @RequestParam("randomText") String text) throws IOException {
-        String username = (String) request.getSession().getAttribute("username");
-
-        if (StringUtils.isEmpty(username)) {
-            log.info("user needs to register.");
-            response.setStatus(302);
-            response.sendRedirect("/");
-        } else {
-            log.info("username = " + username + " text = " + text);
-            response.setStatus(302);
-            response.sendRedirect("/randomText.html");
-        }
-    }
-
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/test/{gameCode}/{player}/{score}")
-    public void addTestScore(@PathVariable ("gameCode") String gameCode, @PathVariable ("player") String player, @PathVariable("score") int score) throws IOException {
-        log.info("received test score " + score + " for player " + player + " for game " + gameCode);
-
-        Score playerScore = new Score();
-        playerScore.player(player);
-        playerScore.score(score);
-
-        sendScore(gameCode, gson.toJson(playerScore));
-    }
-
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/test/{gameCode}/nextRound")
-    public void testStartNewRound(@PathVariable ("gameCode") String gameCode) throws IOException {
-        Game game = games.get(gameCode);
-        game.nextRound();
-    }
-
 }
