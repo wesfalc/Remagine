@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.wesfalc.remagine.domain.Game;
 import com.wesfalc.remagine.domain.Player;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -46,6 +47,11 @@ public class GameController {
         String gameCode = (String) map.get("gameCode");
         String topic = (String) map.get("topic");
 
+        if (StringUtils.isBlank(topic)) {
+            log.warn("Topic is blank for game code " + gameCode);
+            return;
+        }
+
         Game game = games.getIfPresent(gameCode);
         if (game != null) {
             game.setTopic(topic);
@@ -61,6 +67,11 @@ public class GameController {
         String storyHint = (String) map.get("storyHint");
         String storyType = (String) map.get("storyType");
         String likeDislike = (String) map.get("likeDislike");
+
+        if (StringUtils.isBlank(storyHint)) {
+            log.warn("Story hint is blank for game code " + gameCode);
+            return;
+        }
 
         Game game = games.getIfPresent(gameCode);
         if (game != null) {
@@ -116,6 +127,16 @@ public class GameController {
         gameCode = gameCode.trim();
         String playerName = (String) map.get("playerName");
         playerName = playerName.trim();
+
+        if (StringUtils.isBlank(gameCode)) {
+            log.warn("Game code is blank.");
+            return;
+        }
+
+        if(StringUtils.isBlank(playerName)) {
+            log.warn("Player name is blank for game code " + gameCode);
+            return;
+        }
 
         joinGame(gameCode, playerName);
     }

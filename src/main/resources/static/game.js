@@ -17,6 +17,13 @@ window.onload = function () {
     let joinButton = document.getElementById("joinButton");
     let leaveButton = document.getElementById("leaveButton");
     joinButton.addEventListener ("click", function() {
+        gameCode = document.getElementById("gameCode").value.trim();
+        currentPlayer = document.getElementById("playerName").value.trim();
+
+        if (gameCode == null || gameCode ==="" || currentPlayer == null || currentPlayer === "") {
+            return;
+        }
+
         connect();
         // don't worry about disconnect(). It automatically disconnects when the page is closed.
         joinButton.disabled = true;
@@ -481,9 +488,6 @@ function connect() {
     appendTextMessage("Connecting...");
     stompClient.connect({}, function (frame) {
         appendTextMessage("Connected.");
-
-        gameCode = document.getElementById("gameCode").value.trim();
-        currentPlayer = document.getElementById("playerName").value.trim();
 
         stompClient.subscribe('/game/messages/' + gameCode, function (command) {
             // do something with game messages
