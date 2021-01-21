@@ -482,8 +482,8 @@ function connect() {
     stompClient.connect({}, function (frame) {
         appendTextMessage("Connected.");
 
-        gameCode = document.getElementById("gameCode").value;
-        currentPlayer = document.getElementById("playerName").value;
+        gameCode = document.getElementById("gameCode").value.trim();
+        currentPlayer = document.getElementById("playerName").value.trim();
 
         stompClient.subscribe('/game/messages/' + gameCode, function (command) {
             // do something with game messages

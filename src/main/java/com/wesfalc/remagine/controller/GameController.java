@@ -137,7 +137,9 @@ public class GameController {
         log.info("Player joining game - " + jsonMessage);
         Map map = gson.fromJson(jsonMessage, Map.class);
         String gameCode = (String) map.get("gameCode");
+        gameCode = gameCode.trim();
         String playerName = (String) map.get("playerName");
+        playerName = playerName.trim();
 
         Game game = joinGame(gameCode, playerName);
     }
