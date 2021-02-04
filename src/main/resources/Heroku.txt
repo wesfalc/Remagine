@@ -1,0 +1,52 @@
+ 449  cd MyFolder/Programs/Remagine/
+  450  git status
+  451  heroku
+  452  heroku login
+  453  cd D:
+  454  cd MyFolder/Programs/
+  455  cd Remagine/
+  456  heroku login
+  457  heroku create
+  458  heroku apps:rename --app aqueous-retreat-25647 remagine
+  459  git remote add heroku
+  460  git remote add heroku
+  461  git remote add heroku
+  462  git remote add heroku https://git.heroku.com/remagine.git
+  463  git remote rm heroku
+  464  git remote add heroku https://git.heroku.com/remagine.git
+  465  pit push heroku master
+  466  git push heroku master
+  467  git status
+  468  git add system.properties
+  469  git commit -m 'Set JDK to 11 for Heroku'
+  470  git push heroku master
+  471  git status
+  472  git add pom.xml
+  473  git commit -m 'Add maven-jar-plugin to get this app to work with Heroku.'
+  474  git push heroku master
+  475  git status
+  476  git log
+  477  git status
+  478  git add pom.xml
+  479  git commit -m 'Try maven-assembly-plugin since jar plugin did not do it for Heroku'
+  480  git push heroku master
+  481  git status
+  482  git add pom.xml
+  483  git commit -m 'maven-assembly-plugin did not work either. Try heroku-maven-plugin'
+  484  git push heroku master
+  485  mvn clean heroku:deploy
+  486  git status
+  487  git add pom.xml
+  488  git commit -m 'Even the heroku-maven-plugin did not work. Try the spring-boot-maven-plugin in addition to it.'
+  489  git push heroku master
+  490  git status
+  491  git add pom.xml
+  492  git commit -m 'Add the repackage goal'
+  493  git push heroku master
+  494  cd D:
+  495  cd MyFolder/Programs/
+  496  cd Remagine/
+  497  heroku logs --tail
+  498  heroku logs --tail
+  499  heroku logs --tail
+  500  exit
