@@ -74,6 +74,16 @@ function getTextForMessage(json) {
             appendText = eventDesc + " is the new host of this game.";
         }
     }
+    else if (type === "HOST_RECONNECTED") {
+        if (eventDesc === currentPlayer) {
+            appendText = "You are the host of this game.";
+            playerIsHost = true;
+            addAdminControls(false);
+        }
+        else {
+            appendText = eventDesc + " is the host of this game.";
+        }
+    }
     else if (type === "PLAYER_JOINED") {
         appendText = eventDesc + " joined the game.";
     }
@@ -98,8 +108,8 @@ function getTextForMessage(json) {
     else if (type === "STORY_SUBMITTED") {
         appendText = eventDesc + " is ready with a story.";
     }
-    else if (type === "PLAYER_ALREADY_IN_GAME") {
-        appendText = eventDesc + " is already in the game. ";
+    else if (type === "PLAYER_RECONNECTED") {
+        appendText = eventDesc + " reconnected. ";
     }
     else if (type === "PLAYER_LEFT") {
         appendText = eventDesc + " left the game. ";
@@ -527,6 +537,9 @@ function connect() {
     }, function (message) {
         // this is for unintended disconnects
         appendTextMessage("Connection Lost. Message = " + message);
+        setTimeout(function() {
+                connect();
+            }, 5000);
     });
 
 }

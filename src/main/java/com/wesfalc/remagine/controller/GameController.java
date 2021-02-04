@@ -158,7 +158,7 @@ public class GameController {
         Game game;
         if (games.getIfPresent(gameCode) != null) {
             game = games.getIfPresent(gameCode);
-            game.addPlayer(player);
+            game.playerJoined(player);
         }
         else {
             game = new Game(messagingTemplate, gameCode, player);

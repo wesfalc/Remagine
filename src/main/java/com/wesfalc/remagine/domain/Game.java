@@ -44,13 +44,17 @@ public class Game {
         this.messagingTemplate = messagingTemplate;
         this.code = code;
         host(host);
-        addPlayer(host);
+        playerJoined(host);
         addNewEvent(new Event(Event.Type.GAME_CREATED, code));
     }
 
-    public void addPlayer(Player player) {
+    public void playerJoined(Player player) {
         if (activePlayerMap.containsKey(player.name())) {
-            addNewEvent(new Event(Event.Type.PLAYER_ALREADY_IN_GAME, player.name()));
+            addNewEvent(new Event(Event.Type.PLAYER_RECONNECTED, player.name()));
+            if (player.equals(host)) {
+                addNewEvent(new Event(Event.Type.HOST_RECONNECTED, host.name()));
+            }
+            sendScores();
             return;
         }
 
@@ -59,6 +63,7 @@ public class Game {
             activePlayers.add(existingPlayer);
             activePlayerMap.put(existingPlayer.name(), existingPlayer);
             addNewEvent(new Event(Event.Type.PLAYER_REJOINED, player.name()));
+            sendScores();
             setHostIfNull();
             return;
         }
@@ -66,6 +71,7 @@ public class Game {
         activePlayers.add(player);
         activePlayerMap.put(player.name(), player);
         addNewEvent(new Event(Event.Type.PLAYER_JOINED, player.name()));
+        sendScores();
         setHostIfNull();
     }
 
@@ -103,7 +109,7 @@ public class Game {
     public void start() {
         addNewEvent(new Event(Event.Type.GAME_STARTED, "Game started."));
         Collections.shuffle(activePlayers);
-        sendInitialScores();
+        sendScores();
         nextRound();
     }
 
@@ -306,7 +312,7 @@ public class Game {
         messagingTemplate.convertAndSend("/game/score/" + code, scoreJson);
     }
 
-    private void sendInitialScores() {
+    private void sendScores() {
         for(Player player : activePlayers) {
             Score scoreMessage = new Score();
             scoreMessage.player(player.name());
