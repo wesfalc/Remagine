@@ -499,33 +499,64 @@ function connect() {
     stompClient.connect({}, function (frame) {
         appendTextMessage("Connected.");
 
+        // common messages
         stompClient.subscribe('/game/messages/' + gameCode, function (command) {
             // do something with game messages
             appendMessage(command);
         });
 
+        // for the individual user (intended for message replay)
         stompClient.subscribe('/game/messages/' + gameCode + '/' + currentPlayer, function (command) {
-            // these messages are for the individual user
             appendMessage(command);
         });
 
+        // common messages
         stompClient.subscribe('/game/score/' + gameCode, function (command) {
             updateScore(command);
         });
 
+        // for the individual user (intended for message replay)
+        stompClient.subscribe('/game/score/' + gameCode + '/' + currentPlayer, function (command) {
+            updateScore(command);
+        });
+
+        // common messages
         stompClient.subscribe('/game/newRound/' + gameCode, function (command) {
             handleNewRound(command);
         });
 
+        // for the individual user (intended for message replay)
+        stompClient.subscribe('/game/newRound/' + gameCode + '/' + currentPlayer, function (command) {
+            handleNewRound(command);
+        });
+
+        // common messages
         stompClient.subscribe('/game/topicSet/' + gameCode, function (command) {
             handleTopicSet(command);
         });
 
+        // for the individual user (intended for message replay)
+        stompClient.subscribe('/game/topicSet/' + gameCode + '/' + currentPlayer, function (command) {
+            handleTopicSet(command);
+        });
+
+        // common messages
         stompClient.subscribe('/game/storySubmitted/' + gameCode, function (command) {
             handleStorySubmitted(command);
         });
 
+        // for the individual user (intended for message replay)
+        stompClient.subscribe('/game/storySubmitted/' + gameCode + '/' + currentPlayer, function (command) {
+            handleStorySubmitted(command);
+        });
+
+        // common messages
         stompClient.subscribe('/game/storyRevealed/' + gameCode, function (command) {
+            handleStoryRevealed(command);
+        });
+
+        // for the individual user (intended for message replay)
+        stompClient.subscribe('/game/storyRevealed/' + gameCode + '/' + currentPlayer, function (command) {
             handleStoryRevealed(command);
         });
 

@@ -55,6 +55,7 @@ public class Game {
                 addNewEvent(new Event(Event.Type.HOST_RECONNECTED, host.name()));
             }
             sendScores();
+            resendMessagesForCurrentRoundToPlayer(player.name());
             return;
         }
 
@@ -65,6 +66,7 @@ public class Game {
             addNewEvent(new Event(Event.Type.PLAYER_REJOINED, player.name()));
             sendScores();
             setHostIfNull();
+            resendMessagesForCurrentRoundToPlayer(player.name());
             return;
         }
 
@@ -113,8 +115,35 @@ public class Game {
         nextRound();
     }
 
+    public void resendMessagesForCurrentRoundToPlayer(String playerName) {
+        if (currentRound == null) {
+            return;
+        }
+
+        List<Message> messages = currentRound.messages();
+        for(int i = 0; i < messages.size(); i++) {
+            Message message = messages.get(i);
+            String commonDestination = message.destination();
+            String playerDestination = commonDestination + "/" + playerName;
+            Object messageContent = message.content();
+            resendMessage(playerDestination, messageContent);
+        }
+    }
+
+    private void sendMessage(String destination, Object messageContent) {
+        if (currentRound != null) {
+            Message message = new Message(destination, messageContent);
+            currentRound.addMessage(message);
+        }
+        messagingTemplate.convertAndSend(destination, messageContent);
+    }
+
+    private void resendMessage(String destination, Object messageContent) {
+        messagingTemplate.convertAndSend(destination, messageContent);
+    }
+
     private void addNewEvent(Event event) {
-        messagingTemplate.convertAndSend("/game/messages/" + code, gson.toJson(event));
+        sendMessage("/game/messages/" + code, gson.toJson(event));
     }
 
     public void nextRound() {
@@ -150,7 +179,7 @@ public class Game {
     }
 
     private void sendStoryRevealedMessage(Story story) {
-        messagingTemplate.convertAndSend("/game/storyRevealed/" + code, gson.toJson(story));
+        sendMessage("/game/storyRevealed/" + code, gson.toJson(story));
     }
 
     private void sendStorySubmittedMessage(Story story) {
@@ -159,15 +188,15 @@ public class Game {
         storyToSend.playerName(story.playerName());
         storyToSend.storyHint(story.storyHint());
 
-        messagingTemplate.convertAndSend("/game/storySubmitted/" + code, gson.toJson(storyToSend));
+        sendMessage("/game/storySubmitted/" + code, gson.toJson(storyToSend));
     }
 
     private void sendTopicSetMessage() {
-        messagingTemplate.convertAndSend("/game/topicSet/" + code, gson.toJson(currentRound));
+        sendMessage("/game/topicSet/" + code, gson.toJson(currentRound));
     }
 
     private void sendNewRoundMessage() {
-        messagingTemplate.convertAndSend("/game/newRound/" + code, gson.toJson(currentRound));
+        sendMessage("/game/newRound/" + code, gson.toJson(currentRound));
     }
 
     private Player getTopicSetterForThisRound() {
@@ -309,7 +338,7 @@ public class Game {
     }
 
     private void sendScore(String gameCode, String scoreJson) {
-        messagingTemplate.convertAndSend("/game/score/" + code, scoreJson);
+        sendMessage("/game/score/" + code, scoreJson);
     }
 
     private void sendScores() {
